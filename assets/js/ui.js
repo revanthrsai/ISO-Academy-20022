@@ -497,7 +497,7 @@ function renderMessageSpotlight(spotlight) {
 // styles. Gated by KNOWLEDGE_LESSON_IDS so nodes roll in one phase at a time:
 //   Phase 3 -> foundations;  Phase 5 adds the five domains;  etc.
 // ---------------------------------------------------------------------------
-const KNOWLEDGE_LESSON_IDS = ['foundations'];
+const KNOWLEDGE_LESSON_IDS = ['foundations', 'payments', 'fx', 'cards', 'trade', 'securities'];
 
 function hasKnowledgeLesson(moduleId) {
     return typeof getKnowledgeNode === 'function'

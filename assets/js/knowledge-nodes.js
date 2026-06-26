@@ -138,7 +138,7 @@ const knowledgeNodes = {
 
         // --- Beat 9: You can now... ---
         earnedSkill: "You can now spot the same four building blocks — sender, receiver, amount, identifier — inside any ISO 20022 message you ever see.",
-        relatedNodes: ['payments', 'metamodel', 'history-iso'],
+        relatedNodes: ['payments', 'fx', 'cards'],
         glossaryTerms: ['Debtor', 'Creditor', 'XML Schema', 'MT Format', 'Settlement']
     },
 
@@ -229,15 +229,350 @@ const knowledgeNodes = {
 
         // --- Beat 9: You can now... ---
         earnedSkill: "You can now read a pacs.008 credit transfer and a camt.054 notification — and say exactly who's paying whom, and how the arrival gets confirmed.",
-        relatedNodes: ['foundations', 'fx', 'networks', 'uetr'],
+        relatedNodes: ['foundations', 'trade', 'fx', 'cards'],
         glossaryTerms: ['Clearing', 'Settlement', 'Creditor', 'Debtor', 'CBPR+', 'Reconciliation']
+    },
+
+    // =====================================================================
+    // FOREIGN EXCHANGE  —  Bob's dirhams become Sweety's rupees
+    // =====================================================================
+    fx: {
+        id: 'fx',
+        layer: 'taxonomy',
+        title: 'Foreign Exchange',
+        icon: '💱',
+
+        // --- Beat 1: The Human Question ---
+        humanQuestion: "Bob earns in dirhams and Sweety needs rupees — who actually swaps one for the other, and what stops the agreed rate from quietly falling apart mid-trade?",
+
+        // --- Beat 2: Who feels this ---
+        whoFeelsIt: [
+            { who: 'Bob and Sweety', pain: "If the two banks disagree on the rate by even a fraction, money goes missing on one end and nobody can say why." },
+            { who: 'A bank settling a currency trade across time zones', pain: "It can pay out its side in the morning and discover the other party collapsed before paying back — losing the full amount." },
+            { who: 'An operations team', pain: 'When the deal terms live in free text, the two sides disagree on what was agreed and fix it by hand, hours later.' }
+        ],
+
+        // --- Beat 3: The Story ---
+        story: {
+            lead: "Bob is paid in AED. Sweety spends in INR. Somewhere between his bank and hers, one currency has to become the other — a trade that exists for a fraction of a second but has to be agreed, confirmed, and settled perfectly.",
+            beats: [
+                "Two parties agree: this many dirhams for this many rupees, settling on this date. Both must record exactly the same thing, down to the decimal.",
+                "The danger is timing. If one side pays its currency and the other defaults before paying back, the first side simply loses the money — a real disaster that happened, and reshaped the whole market.",
+                "So a neutral settlement agent now sits in the middle and refuses to move either currency unless both move together."
+            ],
+            castPayoff: "You just met the two counterparties, the settlement agent between them, the currency pair, the settlement date — and the simple rule that neither leg moves unless both do."
+        },
+
+        // --- Beat 4: How the world solved it ---
+        worldProcess: {
+            summary: "Both sides confirm the identical trade in a structured message, and a central settlement agent releases each currency only if the other is released at the same instant (payment-versus-payment).",
+            participants: [
+                { role: 'Counterparty A', plain: "Bob's side of the exchange — wants to sell dirhams.", icon: '🏦' },
+                { role: 'Counterparty B', plain: "Sweety's side — wants the rupees.", icon: '🏦' },
+                { role: 'Settlement Agent', plain: 'The neutral party that moves both currencies together, or not at all.', icon: '🔁' },
+                { role: 'Matching System', plain: 'Checks that both sides confirmed the exact same trade.', icon: '🧮' }
+            ],
+            flow: ['Counterparty A', 'Trade Agreement', 'Counterparty B', 'Settlement Agent (both legs together)']
+        },
+
+        // --- Beat 5: How ISO models it ---
+        semanticModel: {
+            summary: "An FX trade is modeled as a confirmation both counterparties send: the same trade reference, the same currency pair, the same settlement date. Matching those structured fields is what replaces hours of manual checking.",
+            roles: [
+                { concept: 'Currency Pair', plain: 'the two currencies being exchanged — AED for INR' },
+                { concept: 'Trade Reference', plain: 'a shared id so both sides point to the same deal' },
+                { concept: 'Settlement Date', plain: 'the day the converted funds actually change hands' },
+                { concept: 'Settlement Agent', plain: 'the neutral party guaranteeing both legs move together' }
+            ]
+        },
+
+        // --- Beat 6: The message(s) ---
+        messages: [
+            { code: 'fxtr.014', businessName: 'FX Trade Instruction', plainRole: 'Confirms a currency trade — spot, forward, or option — to the settlement system.' },
+            { code: 'fxtr.015', businessName: 'FX Trade Instruction Amendment', plainRole: 'Adjusts the terms of a trade already confirmed.' },
+            { code: 'fxtr.016', businessName: 'FX Trade Instruction Cancellation', plainRole: 'Cancels a confirmed trade before it settles.' }
+        ],
+
+        // --- Beat 7: The real XML ---
+        xml: {
+            intro: "Here's the confirmation that pins down Bob's dirhams-to-rupees trade. Each tag is a fact both sides must agree on.",
+            code: '<Document>\n  <FXTradeInstruction>\n    <TradeId>FX-2026-001</TradeId>\n    <CcyPair>AED/INR</CcyPair>\n    <SttlmDt>2026-06-24</SttlmDt>\n  </FXTradeInstruction>\n</Document>',
+            tagGlossary: [
+                { tag: 'TradeId', plain: 'The shared reference for this specific exchange.' },
+                { tag: 'CcyPair', plain: 'The two currencies being swapped — AED for INR.' },
+                { tag: 'SttlmDt', plain: 'The date the converted funds actually settle.' }
+            ]
+        },
+
+        // --- Beat 8: What breaks ---
+        breaks: [
+            { symptom: 'Two banks disagree on a settlement weeks later.', cause: 'The fixing date and reference rate were typed into free text, so each side read them differently.', fix: 'Carry fixing details in structured fields both sides match automatically.' },
+            { symptom: 'A bank loses the full value of a trade.', cause: 'It paid its currency leg before the counterparty paid back, and the counterparty failed (settlement risk).', fix: 'Settle through a payment-versus-payment agent that releases both legs together or neither.' }
+        ],
+
+        // --- Beat 9: You can now... ---
+        earnedSkill: "You can now read an FX trade confirmation and explain why settling both currency legs together is what keeps the money from vanishing.",
+        relatedNodes: ['payments', 'cards', 'foundations'],
+        glossaryTerms: ['Counterparty', 'Settlement', 'Liquidity']
+    },
+
+    // =====================================================================
+    // CARDS  —  Sweety taps her card; the money's last mile
+    // =====================================================================
+    cards: {
+        id: 'cards',
+        layer: 'taxonomy',
+        title: 'Cards',
+        icon: '💳',
+
+        // --- Beat 1: The Human Question ---
+        humanQuestion: "Sweety taps her card at the pharmacy and it approves in under a second — how did four different companies just agree that fast?",
+
+        // --- Beat 2: Who feels this ---
+        whoFeelsIt: [
+            { who: 'Sweety at the counter', pain: 'When her card is declined for no clear reason, nobody in the shop can tell her which of four systems said no.' },
+            { who: 'The shop owner', pain: 'Switching to a cheaper card processor means buying all-new terminals, because the old ones are locked to one network.' },
+            { who: 'A point-of-sale software developer', pain: 'Every card network speaks its own dialect, so each one needs custom integration code written and maintained separately.' }
+        ],
+
+        // --- Beat 3: The Story ---
+        story: {
+            lead: "The money has landed. Sweety taps her card at the pharmacy. In that instant, the payment has to be checked, approved, and later settled — passing through the shop's bank and her own, on systems they never built together.",
+            beats: [
+                "First, an authorization: is the card real, and is there enough on it? That answer races out and back in under a second.",
+                "Later, clearing and settlement actually move the money between the shop's bank and Sweety's bank.",
+                "Card networks used to do all this with their own private formats — so every processor needed custom wiring for every network it touched."
+            ],
+            castPayoff: "You just met the cardholder, the merchant, the acquirer (the shop's bank), and the card issuer (Sweety's bank) — and the authorization that ties them together in a heartbeat."
+        },
+
+        // --- Beat 4: How the world solved it ---
+        worldProcess: {
+            summary: "The same structured approach used for payments now carries card authorizations, so a tap can flow over shared rails instead of one-off formats.",
+            participants: [
+                { role: 'Cardholder (Sweety)', plain: 'taps the card to pay', icon: '👤' },
+                { role: 'Merchant (the pharmacy)', plain: 'reads the card and asks for approval', icon: '🏪' },
+                { role: 'Acquirer', plain: "the merchant's bank, which forwards the request", icon: '🏦' },
+                { role: 'Card Network', plain: 'routes the request to the right issuer', icon: '🔁' },
+                { role: 'Card Issuer', plain: "Sweety's bank, which approves or declines", icon: '🏛️' }
+            ],
+            flow: ['Sweety taps', 'Pharmacy terminal', 'Acquirer', 'Card Network', "Sweety's Bank (approve)"]
+        },
+
+        // --- Beat 5: How ISO models it ---
+        semanticModel: {
+            summary: "A card payment is modeled as an authorization request: which card, how much, at which merchant — the same who/how-much shape you already know, fitted to a shop counter.",
+            roles: [
+                { concept: 'Transaction Reference', plain: 'a unique id for this single tap' },
+                { concept: 'Card', plain: "Sweety's card number, masked for safety" },
+                { concept: 'Amount', plain: 'how much the pharmacy is charging' },
+                { concept: 'Merchant', plain: 'who is being paid — the pharmacy' }
+            ]
+        },
+
+        // --- Beat 6: The message(s) ---
+        messages: [
+            { code: 'caaa.001', businessName: 'Card Payment Service Request', plainRole: 'The terminal asks the acquirer to authorize the tap.' },
+            { code: 'caaa.002', businessName: 'Card Payment Service Response', plainRole: 'The approve/decline answer back to the terminal.' },
+            { code: 'cain.001', businessName: 'Acquirer-to-Issuer Authorisation Request', plainRole: "Forwards the request to Sweety's bank via the network." },
+            { code: 'cain.002', businessName: 'Acquirer-to-Issuer Authorisation Response', plainRole: "The issuer's decision coming back." }
+        ],
+
+        // --- Beat 7: The real XML ---
+        xml: {
+            intro: "Here's what fires the instant Sweety taps. Every tag is a fact the shop's bank needs to ask hers for an answer.",
+            code: '<Document>\n  <CardAuthorisationReq>\n    <TxId>TXN-0001</TxId>\n    <Card><Pan>**** **** **** 1234</Pan></Card>\n    <Amt Ccy="INR">350.00</Amt>\n    <Mrch><Nm>Sweety\'s Pharmacy</Nm></Mrch>\n  </CardAuthorisationReq>\n</Document>',
+            tagGlossary: [
+                { tag: 'TxId', plain: 'Unique reference for this one tap.' },
+                { tag: 'Card / Pan', plain: "Sweety's card number, masked for security." },
+                { tag: 'Amt', plain: 'The amount the pharmacy is charging, in rupees.' },
+                { tag: 'Mrch', plain: 'The merchant being paid — her pharmacy.' }
+            ]
+        },
+
+        // --- Beat 8: What breaks ---
+        breaks: [
+            { symptom: 'A processor needs months to support a new card network.', cause: 'Each network historically used its own proprietary message format.', fix: 'Use the shared ISO 20022 card structure so one integration serves many networks.' },
+            { symptom: 'A company can\'t reconcile its card spend automatically.', cause: 'The old card format had no room for invoice or tax detail, so statements are matched by hand.', fix: 'Carry structured purchase detail inside the standardized message.' }
+        ],
+
+        // --- Beat 9: You can now... ---
+        earnedSkill: "You can now trace a card payment from Sweety's tap all the way to settlement, and name who approves it.",
+        relatedNodes: ['payments', 'securities', 'foundations'],
+        glossaryTerms: ['Settlement', 'Clearing', 'Counterparty']
+    },
+
+    // =====================================================================
+    // SECURITIES  —  what Sweety does with what's left over
+    // =====================================================================
+    securities: {
+        id: 'securities',
+        layer: 'taxonomy',
+        title: 'Securities',
+        icon: '📈',
+
+        // --- Beat 1: The Human Question ---
+        humanQuestion: "Sweety puts what's left into a small fund — when it pays a dividend months later, who makes sure she actually gets it?",
+
+        // --- Beat 2: Who feels this ---
+        whoFeelsIt: [
+            { who: 'An investor like Sweety', pain: 'A dividend or a share split can be missed entirely if the news reaches her custodian too late or in a form it misreads.' },
+            { who: 'A custodian holding the shares', pain: 'When event terms arrive as free-text notes from many sources, staff re-key and reconcile them by hand, and mistakes slip through.' },
+            { who: 'Both sides of a trade', pain: 'If their records of the same trade disagree, settlement fails and the fix is slow and costly.' }
+        ],
+
+        // --- Beat 3: The Story ---
+        story: {
+            lead: "Sweety doesn't spend everything Bob sends. What's left over goes into a small fund — and that modest investment quietly joins one of the most heavily standardized flows in all of finance.",
+            beats: [
+                "Buying in means settling correctly across a broker, a central depository, and a custodian — each holding a piece of the truth.",
+                "Then every event that touches the fund afterward — a dividend, a split — has to reach her custodian accurately and on time.",
+                "Mismatched details between custodians used to cause failed settlements and missed deadlines, sometimes costing investors real money they never heard about in time."
+            ],
+            castPayoff: "You just met the investor, the broker, the central depository, and the custodian — plus the corporate action and the settlement that keep Sweety's small stake honest."
+        },
+
+        // --- Beat 4: How the world solved it ---
+        worldProcess: {
+            summary: "Every participant in the chain gets the same structured view of the trade and of each event, so nothing falls through the cracks between hand-offs.",
+            participants: [
+                { role: 'Investor (Sweety)', plain: 'owns the stake in the fund', icon: '👤' },
+                { role: 'Broker', plain: 'executes the buy or sell order', icon: '💼' },
+                { role: 'Central Depository', plain: 'the definitive registry of who owns what', icon: '🏛️' },
+                { role: 'Custodian', plain: "safekeeps Sweety's holding and services events", icon: '🏦' }
+            ],
+            flow: ['Sweety', 'Broker', 'Central Depository', 'Custodian (settled & serviced)']
+        },
+
+        // --- Beat 5: How ISO models it ---
+        semanticModel: {
+            summary: "A corporate-action notification is modeled around the event itself: which event, on which security, with which dates — so a custodian can act on it without re-reading prose.",
+            roles: [
+                { concept: 'Event Reference', plain: 'a unique id for this specific corporate action' },
+                { concept: 'Event Type', plain: 'what kind of event it is — a dividend, a split' },
+                { concept: 'Security', plain: 'the exact holding the event applies to' },
+                { concept: 'Custodian', plain: 'the party that must act on it for Sweety' }
+            ]
+        },
+
+        // --- Beat 6: The message(s) ---
+        messages: [
+            { code: 'SEEV.001', businessName: 'Securities Event Notification', plainRole: "Tells the custodian a corporate action — like a dividend — is happening." },
+            { code: 'seev.031', businessName: 'Corporate Action Notification', plainRole: 'Announces the event terms and key dates in structured fields.' },
+            { code: 'sese.023', businessName: 'Securities Settlement Instruction', plainRole: 'Instructs delivery or receipt of the securities themselves.' }
+        ],
+
+        // --- Beat 7: The real XML ---
+        xml: {
+            intro: "This is what Sweety's custodian receives when her fund pays a dividend. The tags name the event, not free-text prose.",
+            code: '<Document>\n  <SecuritiesEventNotification>\n    <EventId>EVT001</EventId>\n    <EventType>DIVD</EventType>\n    <SecurityId>US0378331005</SecurityId>\n  </SecuritiesEventNotification>\n</Document>',
+            tagGlossary: [
+                { tag: 'EventId', plain: 'Unique reference for this corporate action.' },
+                { tag: 'EventType', plain: 'The kind of event — DIVD means a dividend.' },
+                { tag: 'SecurityId', plain: 'The exact security the event applies to.' }
+            ]
+        },
+
+        // --- Beat 8: What breaks ---
+        breaks: [
+            { symptom: 'An investor misses a dividend or a vote.', cause: 'Event terms arrived as free text and were parsed too slowly or wrongly.', fix: 'Carry the event in structured fields every custodian reads the same way.' },
+            { symptom: 'A trade fails to settle.', cause: 'Two intermediaries recorded the same trade with mismatched details.', fix: 'Match structured settlement instructions instead of narrative blocks.' }
+        ],
+
+        // --- Beat 9: You can now... ---
+        earnedSkill: "You can now read a corporate action notification the way a custodian would, and say why structured event data prevents missed dividends.",
+        relatedNodes: ['fx', 'payments', 'foundations'],
+        glossaryTerms: ['Settlement', 'Reconciliation', 'Counterparty']
+    },
+
+    // =====================================================================
+    // TRADE FINANCE  —  where Bob's salary actually came from
+    // =====================================================================
+    trade: {
+        id: 'trade',
+        layer: 'taxonomy',
+        title: 'Trade Finance',
+        icon: '🚢',
+
+        // --- Beat 1: The Human Question ---
+        humanQuestion: "Two companies on opposite sides of the world, who've never met — how does either trust the other to pay, or to ship, first?",
+
+        // --- Beat 2: Who feels this ---
+        whoFeelsIt: [
+            { who: 'A seller shipping goods abroad', pain: "Send the cargo before you're paid and a stranger overseas could simply never pay." },
+            { who: 'A buyer paying in advance', pain: 'Pay first and the goods might never arrive, or arrive wrong.' },
+            { who: 'The banks in the middle', pain: 'Slow, paper-heavy guarantees and inconsistent terms stall shipments for days and tie up cash.' }
+        ],
+
+        // --- Beat 3: The Story ---
+        story: {
+            lead: "Step back further. Bob's salary exists because the company he works for trades internationally. This month's payroll was only possible because a shipment left port after a bank-backed guarantee changed hands between a buyer and seller who may never meet.",
+            beats: [
+                "Neither side trusts the other to go first — so a bank steps in and promises to pay the seller once proof of shipment is presented.",
+                "That promise, a letter of credit, turns 'trust a stranger' into 'trust a bank'.",
+                "Done on paper, it crawled; done as structured data, banks and companies on both sides process it consistently — and the capital behind Bob's paycheck keeps moving."
+            ],
+            castPayoff: "You just met the applicant (the buyer), the beneficiary (the seller), the issuing bank, and the advising bank — and the guarantee that lets trade happen between strangers."
+        },
+
+        // --- Beat 4: How the world solved it ---
+        worldProcess: {
+            summary: "A bank issues a structured guarantee to the seller on the buyer's behalf; on proof of a compliant shipment, it pays — turning a paper ritual into machine-readable data.",
+            participants: [
+                { role: "Applicant (Bob's employer)", plain: 'the buyer who asks its bank to guarantee payment', icon: '🧑‍💼' },
+                { role: 'Beneficiary (the supplier)', plain: 'the seller protected by the guarantee', icon: '🧑‍💼' },
+                { role: 'Issuing Bank', plain: "the buyer's bank that makes the promise", icon: '🏦' },
+                { role: 'Advising Bank', plain: 'the seller-side bank that verifies and relays it', icon: '🏛️' }
+            ],
+            flow: ["Bob's Employer", 'Issuing Bank', 'Advising Bank', 'Supplier (ships on guarantee)']
+        },
+
+        // --- Beat 5: How ISO models it ---
+        semanticModel: {
+            summary: "A letter of credit is modeled as an undertaking: who is guaranteed, by whom, for how much — the trust relationship written as structured data both banks can process.",
+            roles: [
+                { concept: 'Undertaking Reference', plain: 'a unique id for this guarantee' },
+                { concept: 'Applicant', plain: "the buyer requesting it — Bob's employer" },
+                { concept: 'Beneficiary', plain: 'the seller it protects — the supplier' },
+                { concept: 'Amount', plain: 'the value the guarantee covers' }
+            ]
+        },
+
+        // --- Beat 6: The message(s) ---
+        messages: [
+            { code: 'tsrv.001', businessName: 'Undertaking Issuance', plainRole: 'Issues the letter of credit or guarantee with its terms.' },
+            { code: 'tsrv.002', businessName: 'Undertaking Issuance Advice', plainRole: 'Relays the issued guarantee to the seller via their bank.' },
+            { code: 'tsrv.013', businessName: 'Undertaking Demand', plainRole: 'Claims payment under the guarantee when terms are met.' }
+        ],
+
+        // --- Beat 7: The real XML ---
+        xml: {
+            intro: "This is the bank-backed guarantee behind Bob's paycheck — the trust between two strangers, written down.",
+            code: '<Document>\n  <UndertakingIssuance>\n    <UndertakingId>LC-2026-001</UndertakingId>\n    <Applcnt><Nm>Bob\'s Employer Corp</Nm></Applcnt>\n    <Bnfcry><Nm>Overseas Supplier Ltd</Nm></Bnfcry>\n    <Amt Ccy="USD">250000.00</Amt>\n  </UndertakingIssuance>\n</Document>',
+            tagGlossary: [
+                { tag: 'UndertakingId', plain: 'Unique reference for this letter of credit.' },
+                { tag: 'Applcnt', plain: "The buyer requesting it — Bob's employer." },
+                { tag: 'Bnfcry', plain: 'The seller it protects — the overseas supplier.' },
+                { tag: 'Amt', plain: 'The value the guarantee covers.' }
+            ]
+        },
+
+        // --- Beat 8: What breaks ---
+        breaks: [
+            { symptom: 'A shipment stalls in port for days.', cause: 'Paper guarantees and inconsistent terms passed slowly between banks.', fix: 'Exchange the undertaking as structured data both banks process automatically.' },
+            { symptom: 'A valid claim is rejected on a technicality.', cause: 'A spelling or date mismatch between documents and the credit terms.', fix: 'Match structured trade datasets against the credit terms instead of reading by eye.' }
+        ],
+
+        // --- Beat 9: You can now... ---
+        earnedSkill: "You can now describe how a letter of credit lets two strangers trade across borders — and where Bob's salary really came from.",
+        relatedNodes: ['payments', 'fx', 'foundations'],
+        glossaryTerms: ['Settlement', 'Counterparty']
     }
 
     // -----------------------------------------------------------------------
-    // TODO (Phase 3+): foundations is also the entry to `metamodel` (dictionary
-    // layer). Phase 4 adds history-* story nodes. Phase 5 adds securities, cards,
-    // trade, fx. Phase 7 adds the gap nodes: metamodel, networks, routing/cover,
-    // uetr, payload (head.001). Copy the schema template at the top for each.
+    // All six journey chapters are now built (foundations + the five domains).
+    // Phase 7 will add the gap nodes: metamodel, networks, routing/cover, uetr,
+    // payload (head.001). Copy the schema template at the top for each.
     // -----------------------------------------------------------------------
 };
 
