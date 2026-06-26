@@ -20,8 +20,9 @@ files it touches, and a "Definition of Done" so any session can pick up cleanly.
 - ✅ **Phase 1** — `PHILOSOPHY.md` written (5 answers + 9-beat Lesson Spine + acceptance test + Bob & Sweety canon).
 - ✅ **Phase 2** — `assets/js/knowledge-nodes.js` created: node schema + IA layers + helpers + **Foundations** and **Payments** fully built and passing the self-check. Additive, nothing rendered yet — app runs unchanged.
 - ✅ **Phase 3** — Foundations renders **semantic-first**. `ui.js` gains `renderKnowledgeLesson()` (strict 9-beat order, XML only at beat 7), gated by `KNOWLEDGE_LESSON_IDS` (currently `['foundations']`); `loadLessonModule()` branches to it; `index.html` loads `knowledge-nodes.js`. Reuses existing CSS only — no new styles. Verified: beat order correct, XML after the semantic model.
-- ⬜ **Phase 4** — History as story (next).
-- ⬜ Phases 5–10 — pending. (Phase 5 expands `KNOWLEDGE_LESSON_IDS` to the five domains.)
+- ✅ **Phase 4** — History rebuilt as **seven human stories** (Trust → Trade → Money → Communication → Banking → SWIFT → ISO) in `app.js`'s scrub timeline. Each entry = a human question → what broke → what was invented (invention in bold). Pin shows thematic words, not years; intro retuned ("Five thousand years, one problem"); no section leads with a bare year. One small CSS fit: pin-year size trimmed (`style.css`) so word tokens fit the column. Verified via DOM.
+- ⬜ **Phase 5** — Business Catalogue: five domains, uniform flow (next). Expands `KNOWLEDGE_LESSON_IDS`.
+- ⬜ Phases 6–10 — pending.
 
 > **To commit Phase 2:** add `<script src="assets/js/knowledge-nodes.js"></script>`
 > to `index.html` after `data.js` and before `ui.js`. (Optional until Phase 3 —

@@ -204,7 +204,7 @@
 }
 
 .scrub-pin-year {
-    font-size: clamp(56px, 9vw, 120px);
+    font-size: clamp(44px, 6vw, 76px);
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.02em;

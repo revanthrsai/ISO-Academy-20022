@@ -86,7 +86,7 @@ const PAGES = {
             </section>
 
             <section class="story-section reveal-section">
-                <div class="story-year" data-reveal="fade">1970s &middot; The Origin</div>
+                <div class="story-year" data-reveal="fade">The Origin</div>
                 <h2 class="kinetic-headline"><span class="kinetic-word">Banks spoke</span> <span class="gradient-text kinetic-word">different languages.</span></h2>
 
                 <div class="stats-strip">
@@ -165,59 +165,59 @@ const PAGES = {
             </div>
 
             <div class="scrub-intro" data-reveal="up">
-                <div class="eyebrow eyebrow-center">The road to today</div>
-                <h2 class="scrub-intro-title">Five decades, one standard.</h2>
+                <div class="eyebrow eyebrow-center">The longer story</div>
+                <h2 class="scrub-intro-title">Five thousand years, one problem.</h2>
             </div>
 
             <div class="scrub-section" id="scrub-section">
                 <div class="scrub-pin">
-                    <div class="scrub-pin-eyebrow">Timeline</div>
-                    <div class="scrub-pin-year" id="scrub-pin-year">1973</div>
+                    <div class="scrub-pin-eyebrow">The Story</div>
+                    <div class="scrub-pin-year" id="scrub-pin-year">Trust</div>
                     <div class="scrub-pin-track"><div class="scrub-pin-progress" id="scrub-pin-progress"></div></div>
                     <div class="scrub-pin-count"><strong id="scrub-pin-index">01</strong> / 07</div>
                 </div>
 
                 <div class="scrub-entries" id="scrub-entries">
-                    <div class="scrub-entry" data-history data-year="1973">
-                        <div class="scrub-entry-year">1973</div>
-                        <h3 class="scrub-entry-title">SWIFT is founded</h3>
-                        <p class="scrub-entry-desc">239 banks across 15 countries agree on one thing: telex messaging for international payments is slow, insecure, and impossible to scale. <strong>SWIFT</strong> is born to replace it with a shared electronic network.</p>
+                    <div class="scrub-entry" data-history data-year="Trust">
+                        <div class="scrub-entry-year">c. 3200 BCE</div>
+                        <h3 class="scrub-entry-title">The History of Trust</h3>
+                        <p class="scrub-entry-desc">How do you trust that a shipment of grain left a distant farm and arrived untouched, when you never saw it travel? Mesopotamian temples sealed clay tokens inside hollow clay balls — break the ball, count the tokens, verify the delivery. The moment they pressed each token's shape onto the outside, value became <strong>information you could read without opening anything</strong>. The first record was born.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="1977">
-                        <div class="scrub-entry-year">1977</div>
-                        <h3 class="scrub-entry-title">SWIFT MT goes live</h3>
-                        <p class="scrub-entry-desc">The first SWIFT messages flow between banks using the <strong>MT (Message Type)</strong> format — fixed-width, terse, and built for the bandwidth of its era. It becomes the backbone of global banking for the next 40+ years.</p>
+                    <div class="scrub-entry" data-history data-year="Trade">
+                        <div class="scrub-entry-year">449 BCE</div>
+                        <h3 class="scrub-entry-title">The History of Trade</h3>
+                        <p class="scrub-entry-desc">How do you settle a debt across an empire without hauling heavy coin through bandit country? Roman merchants simply wrote it down: if A owed B and B owed C, a few <strong>ledger entries cleared the debt</strong> — no coin moved at all. The ledger itself had quietly become a binding promise of payment.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="2004">
-                        <div class="scrub-entry-year">2004</div>
-                        <h3 class="scrub-entry-title">ISO 20022 is introduced</h3>
-                        <p class="scrub-entry-desc">As payment volumes and complexity grow, the industry needs more than fixed fields. <strong>ISO 20022</strong> arrives as an XML-based standard — structured, extensible, and readable by both machines and humans.</p>
+                    <div class="scrub-entry" data-history data-year="Money">
+                        <div class="scrub-entry-year">1494</div>
+                        <h3 class="scrub-entry-title">The History of Money</h3>
+                        <p class="scrub-entry-desc">How does a merchant catch one error hidden among thousands of transactions? A Venetian friar codified <strong>double-entry bookkeeping</strong> — every amount written twice, debits forced to equal credits, so the books simply could not hide a mistake. Centuries later, goldsmiths' paper notes turned that same trust into money you could carry in your pocket.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="2018">
-                        <div class="scrub-entry-year">2018</div>
-                        <h3 class="scrub-entry-title">Migration is announced</h3>
-                        <p class="scrub-entry-desc">SWIFT formally announces the industry-wide shift from MT to <strong>ISO 20022 MX</strong> for cross-border payments — beginning the largest coordinated messaging migration in banking history.</p>
+                    <div class="scrub-entry" data-history data-year="Wires">
+                        <div class="scrub-entry-year">1871</div>
+                        <h3 class="scrub-entry-title">The History of Communication</h3>
+                        <p class="scrub-entry-desc">How do you move money faster than a horse can carry it? The telegraph split information from the object — and a bank could finally wire funds as an <strong>authenticated message instead of a shipment of cash</strong>. Telex inherited the job for a century, but every transfer was still typed out, checked, and trusted by hand.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="2022">
-                        <div class="scrub-entry-year">2022</div>
-                        <h3 class="scrub-entry-title">Coexistence period begins</h3>
-                        <p class="scrub-entry-desc">Banks run <strong>MT and MX side by side</strong>. Translation layers, mapping engines, and transformation adapters — like the ones built at companies such as Volante — become critical infrastructure during this window.</p>
+                    <div class="scrub-entry" data-history data-year="Banking">
+                        <div class="scrub-entry-year">1974</div>
+                        <h3 class="scrub-entry-title">The History of Banking</h3>
+                        <p class="scrub-entry-desc">What happens when one bank pays its side of a deal and the other collapses before paying back? When Herstatt Bank failed mid-settlement, counterparties lost everything they'd already sent — a disaster that forced the world to build <strong>real-time settlement and payment-versus-payment</strong>, where neither side of a trade moves unless both do.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="2023&ndash;25">
-                        <div class="scrub-entry-year">2023&ndash;2025</div>
-                        <h3 class="scrub-entry-title">CBPR+ becomes mandatory</h3>
-                        <p class="scrub-entry-desc"><strong>CBPR+</strong> (Cross-Border Payments and Reporting Plus) sets the rulebook for how ISO 20022 is implemented globally for correspondent banking, with phased mandatory adoption across major currencies.</p>
+                    <div class="scrub-entry" data-history data-year="SWIFT">
+                        <div class="scrub-entry-year">1973–1977</div>
+                        <h3 class="scrub-entry-title">The History of SWIFT</h3>
+                        <p class="scrub-entry-desc">How do hundreds of banks stop trusting insecure telex messages typed out by hand? 239 banks built <strong>SWIFT</strong> — a shared, secure network with one standard message format. It ran global banking for decades, but its tiny fixed-width fields truncated names and addresses, quietly breaking compliance checks every time a payment crossed a border.</p>
                     </div>
 
-                    <div class="scrub-entry" data-history data-year="2025+">
-                        <div class="scrub-entry-year">2025+</div>
-                        <h3 class="scrub-entry-title">Legacy MT is phased out</h3>
-                        <p class="scrub-entry-desc">SWIFT MT messages for cross-border payments are retired. <strong>ISO 20022</strong> becomes the de facto global language for CAMT, PACS, PAIN and beyond — not an upgrade anymore, but the standard itself.</p>
+                    <div class="scrub-entry" data-history data-year="ISO">
+                        <div class="scrub-entry-year">2004 →</div>
+                        <h3 class="scrub-entry-title">The History of ISO 20022</h3>
+                        <p class="scrub-entry-desc">What if the language banks speak could carry a payment's whole story — and never lose a word crossing a border? <strong>ISO 20022</strong> separated what a payment <em>means</em> from how it's written down, so rich, structured detail now survives end to end. By 2025 the old format was retired for cross-border payments. This is the language the world speaks now.</p>
                     </div>
                 </div>
             </div>
