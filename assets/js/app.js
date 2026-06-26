@@ -3,8 +3,90 @@
 const PAGES = {
     history: `
         <div class="page">
+            <section class="hero-stage" data-hero data-mouse-parallax aria-label="ISO Academy introduction">
+                <div class="hero-bg" aria-hidden="true">
+                    <div class="hero-glow" data-mp-depth="18"></div>
+                    <svg class="hero-net" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" data-mp-depth="34">
+                        <defs>
+                            <radialGradient id="heroNode" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#5EEAD4"/>
+                                <stop offset="100%" stop-color="#059669"/>
+                            </radialGradient>
+                            <linearGradient id="heroFlow" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#10B981" stop-opacity="0"/>
+                                <stop offset="50%" stop-color="#5EEAD4" stop-opacity="0.9"/>
+                                <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <g class="hero-rings">
+                            <circle cx="600" cy="400" r="250"/>
+                            <circle cx="600" cy="400" r="410"/>
+                            <circle cx="600" cy="400" r="580"/>
+                        </g>
+                        <g class="hero-edges">
+                            <line x1="150" y1="180" x2="380" y2="120"/>
+                            <line x1="150" y1="180" x2="300" y2="360"/>
+                            <line x1="380" y1="120" x2="560" y2="300"/>
+                            <line x1="300" y1="360" x2="560" y2="300"/>
+                            <line x1="300" y1="360" x2="180" y2="560"/>
+                            <line x1="560" y1="300" x2="520" y2="540"/>
+                            <line x1="560" y1="300" x2="760" y2="180"/>
+                            <line x1="520" y1="540" x2="680" y2="640"/>
+                            <line x1="760" y1="180" x2="820" y2="440"/>
+                            <line x1="760" y1="180" x2="940" y2="120"/>
+                            <line x1="820" y1="440" x2="1000" y2="300"/>
+                            <line x1="1000" y1="300" x2="1060" y2="560"/>
+                            <line x1="820" y1="440" x2="680" y2="640"/>
+                            <line x1="1000" y1="300" x2="940" y2="120"/>
+                            <line x1="520" y1="540" x2="820" y2="440"/>
+                            <line x1="180" y1="560" x2="520" y2="540"/>
+                        </g>
+                        <g class="hero-flows" stroke="url(#heroFlow)">
+                            <line x1="150" y1="180" x2="380" y2="120" class="hero-flow"/>
+                            <line x1="380" y1="120" x2="560" y2="300" class="hero-flow" style="animation-delay:1.1s"/>
+                            <line x1="560" y1="300" x2="760" y2="180" class="hero-flow" style="animation-delay:2.3s"/>
+                            <line x1="760" y1="180" x2="820" y2="440" class="hero-flow" style="animation-delay:0.6s"/>
+                            <line x1="820" y1="440" x2="1000" y2="300" class="hero-flow" style="animation-delay:3.1s"/>
+                            <line x1="520" y1="540" x2="820" y2="440" class="hero-flow" style="animation-delay:1.8s"/>
+                        </g>
+                        <g class="hero-nodes">
+                            <circle cx="150" cy="180" r="4"/>
+                            <circle cx="380" cy="120" r="5" class="node-pulse"/>
+                            <circle cx="300" cy="360" r="4"/>
+                            <circle cx="560" cy="300" r="6" class="node-pulse" style="animation-delay:1.4s"/>
+                            <circle cx="520" cy="540" r="4"/>
+                            <circle cx="760" cy="180" r="5" class="node-pulse" style="animation-delay:0.7s"/>
+                            <circle cx="820" cy="440" r="5" class="node-pulse" style="animation-delay:2.1s"/>
+                            <circle cx="1000" cy="300" r="6" class="node-pulse" style="animation-delay:2.8s"/>
+                            <circle cx="1060" cy="560" r="4"/>
+                            <circle cx="180" cy="560" r="4"/>
+                            <circle cx="680" cy="640" r="5" class="node-pulse" style="animation-delay:3.4s"/>
+                            <circle cx="940" cy="120" r="4"/>
+                        </g>
+                    </svg>
+                    <div class="hero-vignette"></div>
+                </div>
+
+                <div class="hero-inner">
+                    <div class="hero-eyebrow hl-line"><span class="hero-eyebrow-dot"></span>Interactive Academy &middot; ISO&nbsp;20022</div>
+                    <h1 class="hero-headline">
+                        <span class="hl-line">How money moves</span>
+                        <span class="hl-line">around the <span class="gradient-text">world.</span></span>
+                    </h1>
+                    <p class="hero-sub hl-line">
+                        Not documentation &mdash; an interactive documentary. Follow a single payment across
+                        banks, borders and systems, and discover the hidden language that lets the world&rsquo;s
+                        financial system speak as one: <strong>ISO&nbsp;20022</strong>.
+                    </p>
+                    <div class="hero-cta hl-line">
+                        <button class="btn" data-magnetic onclick="navigate('journey', event)">Start the Journey <span class="btn-arrow">&rarr;</span></button>
+                        <button class="btn btn-ghost" onclick="window.scrollTo({top: (document.querySelector('.story-section')||{}).offsetTop - 60, behavior:'smooth'})">Explore the story</button>
+                    </div>
+                </div>
+            </section>
+
             <section class="story-section reveal-section">
-                <div class="story-year">1970s</div>
+                <div class="story-year" data-reveal="fade">1970s &middot; The Origin</div>
                 <h2 class="kinetic-headline"><span class="kinetic-word">Banks spoke</span> <span class="gradient-text kinetic-word">different languages.</span></h2>
 
                 <div class="stats-strip">
@@ -18,44 +100,73 @@ const PAGES = {
                     </div>
                 </div>
 
-                <p>
+                <p data-reveal="up">
                     International payments depended on telex networks, manual processing,
                     and fragmented standards. Every institution interpreted data differently.
                 </p>
             </section>
 
             <section class="story-section reveal-section">
-                <div class="story-year">The Problem</div>
-                <h2>Money could travel globally.<br>Information <span class="gradient-text">could not.</span></h2>
-                <p>
+                <div class="story-year" data-reveal="fade">The Problem</div>
+                <h2 data-reveal="up">Money could travel globally.<br>Information <span class="gradient-text">could not.</span></h2>
+                <p data-reveal="up" data-reveal-delay="120">
                     Payments crossed borders every day, but their underlying data remained
                     inconsistent, incomplete, and difficult for machines to understand.
                 </p>
             </section>
 
             <section class="story-section reveal-section">
-                <div class="story-year">The Need</div>
-                <h2>The world needed a <span class="gradient-text">common financial language.</span></h2>
+                <div class="story-year" data-reveal="fade">The Need</div>
+                <h2 data-reveal="up">The world needed a <span class="gradient-text">common financial language.</span></h2>
                 <div class="iso-birth">
-                    <div class="iso-year">2004</div>
+                    <div class="iso-year" data-parallax="0.08">2004</div>
                     <div class="iso-name">ISO 20022</div>
-                    <div class="iso-tagline">A universal language for global finance</div>
+                    <div class="iso-tagline" data-reveal="up">A universal language for global finance</div>
                 </div>
-                <p>
+                <p data-reveal="up">
                     A language that every bank, clearing house, payment processor,
                     and regulator could understand.
                 </p>
             </section>
 
             <section class="story-section reveal-section">
-                <p style="font-style: italic; font-size: clamp(20px, 2.6vw, 30px); font-weight: 600; max-width: 720px;">
-                    &ldquo;Imagine a world that never learned to speak the same financial language.&rdquo;
-                </p>
+                <p class="pullquote" data-reveal="blur">&ldquo;Imagine a world that never learned to speak the same financial language.&rdquo;</p>
             </section>
 
-            <div class="history-cinematic-break reveal-section" id="history-cinematic-break">
-                <video class="bg-video" id="history-break-video" src="assets/video/iso-history.mp4" muted loop playsinline controls preload="auto"></video>
-                <div class="history-hero-fade"></div>
+            <div class="history-cinematic-break cinematic-scene reveal-section" id="history-cinematic-break">
+                <div class="cinematic-flow" aria-hidden="true">
+                    <span class="cinematic-node">London</span>
+                    <span class="cinematic-wire"><i class="cinematic-pulse"></i></span>
+                    <span class="cinematic-node">New York</span>
+                    <span class="cinematic-wire"><i class="cinematic-pulse" style="animation-delay:1.1s"></i></span>
+                    <span class="cinematic-node">Singapore</span>
+                    <span class="cinematic-wire"><i class="cinematic-pulse" style="animation-delay:2.2s"></i></span>
+                    <span class="cinematic-node">Mumbai</span>
+                </div>
+
+                <figure class="cinematic-video is-loading" id="cinematic-video">
+                    <video class="cinematic-video-el" id="history-break-video"
+                           muted loop playsinline preload="metadata" disablepictureinpicture
+                           poster="assets/video/iso-history-poster.jpg"
+                           data-src="assets/video/iso-history.mp4"></video>
+                    <div class="cinematic-video-tint" aria-hidden="true"></div>
+                    <div class="cinematic-video-vignette" aria-hidden="true"></div>
+                    <div class="cinematic-video-feather" aria-hidden="true"></div>
+                    <div class="cinematic-video-fallback" aria-hidden="true">
+                        <span class="cinematic-fallback-pulse"></span>
+                        <span class="cinematic-slot-note">Cinematic footage appears here once <code>assets/video/iso-history.mp4</code> is added</span>
+                    </div>
+                </figure>
+
+                <div class="cinematic-caption">
+                    <div class="eyebrow eyebrow-center">Establishing shot</div>
+                    <p>Money moving across the world, in real time.</p>
+                </div>
+            </div>
+
+            <div class="scrub-intro" data-reveal="up">
+                <div class="eyebrow eyebrow-center">The road to today</div>
+                <h2 class="scrub-intro-title">Five decades, one standard.</h2>
             </div>
 
             <div class="scrub-section" id="scrub-section">
@@ -112,9 +223,12 @@ const PAGES = {
             </div>
 
             <section class="story-section reveal-section">
-                <h2>You've seen how we got here.<br>Now see how it <span class="gradient-text">runs today.</span></h2>
-                <p style="font-style: italic;">&ldquo;2004 gave the industry one shared language. Below, that language is organized into the core domains running the world's financial system right now.&rdquo;</p>
-                <button class="btn" onclick="navigate('journey', event)" style="margin-top: 24px;">Start the Learning Journey &rarr;</button>
+                <div class="story-year" data-reveal="fade">Today</div>
+                <h2 data-reveal="up">You've seen how we got here.<br>Now see how it <span class="gradient-text">runs today.</span></h2>
+                <p class="pullquote" data-reveal="blur" style="margin-top:24px;">&ldquo;2004 gave the industry one shared language. Below, that language is organized into the core domains running the world's financial system right now.&rdquo;</p>
+                <div data-reveal="up" data-reveal-delay="160" style="margin-top:36px;">
+                    <button class="btn" data-magnetic onclick="navigate('journey', event)">Start the Learning Journey <span class="btn-arrow">&rarr;</span></button>
+                </div>
             </section>
 
         </div>
@@ -129,57 +243,83 @@ const PAGES = {
     `,
     playground: `
         <div class="page">
-            <h2 class="section-title">Playground</h2>
-            <p class="section-description">
-                Hands-on experimentation with message formats. Select source and destination formats to begin transformation.
-            </p>
+            <div class="pg-head" data-reveal-group>
+                <div class="eyebrow" data-reveal="fade">Playground</div>
+                <h2 class="section-title" data-reveal="up">Watch one message become another.</h2>
+                <p class="section-description" data-reveal="up">
+                    The same payment, two languages. The transformer reads a message in one format and
+                    reconstructs it in another &mdash; field by field, meaning preserved. Here's a preview of what's coming.
+                </p>
+            </div>
 
-            <div style="max-width: 800px; margin-top: 40px;">
-                <div class="grid-2" style="margin-bottom: 32px;">
-                    <div>
-                        <label style="display: block; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">Source Format</label>
-                        <select class="control-select" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background-color: var(--surface); color: var(--text); font-size: 14px; cursor: pointer;">
-                            <option>Select source format...</option>
-                            <option>XML (ISO 20022)</option>
-                            <option>JSON</option>
-                            <option>CSV</option>
-                            <option>SWIFT MT</option>
-                        </select>
+            <div class="pg-console" data-reveal="up">
+                <div class="pg-format-row">
+                    <div class="pg-format">
+                        <label class="pg-label">Source</label>
+                        <div class="pg-pill is-source">SWIFT MT103</div>
                     </div>
-
-                    <div>
-                        <label style="display: block; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px;">Destination Format</label>
-                        <select class="control-select" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; background-color: var(--surface); color: var(--text); font-size: 14px; cursor: pointer;">
-                            <option>Select destination format...</option>
-                            <option>XML (ISO 20022)</option>
-                            <option>JSON</option>
-                            <option>CSV</option>
-                            <option>SWIFT MT</option>
-                        </select>
+                    <div class="pg-transform-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>
+                    </div>
+                    <div class="pg-format">
+                        <label class="pg-label">Destination</label>
+                        <div class="pg-pill is-dest">ISO 20022 &middot; pacs.008</div>
                     </div>
                 </div>
 
-                <div style="background-color: var(--surface); border: 2px dashed var(--border); border-radius: 12px; padding: 60px 40px; text-align: center; min-height: 300px; display: flex; align-items: center; justify-content: center;">
-                    <div>
-                        <div style="font-size: 32px; margin-bottom: 16px;">🔄</div>
-                        <p style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px;">Message Transformation</p>
-                        <p style="font-size: 14px; color: var(--text-muted);">Select source and destination formats to begin field-by-field mapping.</p>
+                <div class="pg-panes">
+                    <div class="pg-pane">
+                        <div class="pg-pane-bar"><span class="pg-dot"></span><span class="pg-dot"></span><span class="pg-dot"></span><span class="pg-pane-name">message.mt</span></div>
+                        <pre class="pg-code pg-code-mt"><code>:20:REF-400USD
+:32A:260624USD400,00
+:50K:/BOB
+:59:/SWEETY
+:71A:SHA</code></pre>
+                    </div>
+
+                    <div class="pg-wire" aria-hidden="true">
+                        <span class="pg-wire-dot"></span>
+                        <span class="pg-wire-dot" style="animation-delay:.6s"></span>
+                        <span class="pg-wire-dot" style="animation-delay:1.2s"></span>
+                    </div>
+
+                    <div class="pg-pane">
+                        <div class="pg-pane-bar"><span class="pg-dot"></span><span class="pg-dot"></span><span class="pg-dot"></span><span class="pg-pane-name">message.xml</span></div>
+                        <pre class="pg-code pg-code-xml"><code>&lt;FIToFICstmrCdtTrf&gt;
+  &lt;CdtTrfTxInf&gt;
+    &lt;Amt Ccy="USD"&gt;400.00&lt;/Amt&gt;
+    &lt;Dbtr&gt;&lt;Nm&gt;Bob&lt;/Nm&gt;&lt;/Dbtr&gt;
+    &lt;Cdtr&gt;&lt;Nm&gt;Sweety&lt;/Nm&gt;&lt;/Cdtr&gt;
+  &lt;/CdtTrfTxInf&gt;
+&lt;/FIToFICstmrCdtTrf&gt;</code></pre>
                     </div>
                 </div>
 
-                <div class="highlight-box" style="margin-top: 32px; border-left-color: var(--primary);">
-                    <strong style="color: var(--primary);">⏳ Coming Soon</strong> — Full transformer with field-by-field mapping, validation, and real-time conversion between formats.
+                <div class="pg-stats" data-reveal-group data-reveal-stagger="120">
+                    <div class="pg-stat" data-reveal="up"><div class="pg-stat-num"><span data-count="5">0</span></div><div class="pg-stat-label">Fields mapped</div></div>
+                    <div class="pg-stat" data-reveal="up"><div class="pg-stat-num"><span data-count="100">0</span><span class="pg-stat-suffix">%</span></div><div class="pg-stat-label">Meaning preserved</div></div>
+                    <div class="pg-stat" data-reveal="up"><div class="pg-stat-num"><span data-count="0">0</span></div><div class="pg-stat-label">Data lost</div></div>
                 </div>
+            </div>
+
+            <div class="pg-soon" data-reveal="up">
+                <span class="pg-soon-badge">In development</span>
+                <p>Soon you'll edit either side and watch the other rebuild live &mdash; with field-by-field mapping,
+                validation, and real-time conversion between MT, XML, JSON and CSV.</p>
             </div>
         </div>
     `,
     glossary: `
         <div class="page">
-            <h2 class="section-title">Glossary</h2>
-            <p class="section-description">
-                Key terms and definitions for ISO 20022 and payment messaging. Search to find definitions.
+            <div class="eyebrow" data-reveal="fade">Reference</div>
+            <h2 class="section-title" data-reveal="up">The language, defined.</h2>
+            <p class="section-description" data-reveal="up">
+                Every term you'll meet across the journey &mdash; from IBAN to settlement &mdash; in one searchable encyclopedia.
             </p>
-            <input type="text" class="search-box" id="glossary-search" placeholder="Search glossary..." onkeyup="filterGlossary(this.value)" style="margin-bottom: 32px;">
+            <div class="glossary-toolbar" data-reveal="up">
+                <input type="text" class="search-box" id="glossary-search" placeholder="Search terms and definitions…" oninput="filterGlossary(this.value)">
+                <span class="glossary-count" id="glossary-count"></span>
+            </div>
             <div class="glossary-grid" id="glossary-grid"></div>
         </div>
     `
@@ -188,14 +328,20 @@ const PAGES = {
 function navigate(page, evt) {
     const content = document.getElementById('content');
     const navItems = document.querySelectorAll('.nav-item');
-    const triggerEl = (evt && evt.target) || document.querySelector(`.nav-item[data-page="${page}"]`);
+    const triggerEl = (evt && evt.target.closest('.nav-item')) || document.querySelector(`.nav-item[data-page="${page}"]`);
 
-    // Update active nav
+    if (evt) evt.preventDefault();
+
+    // Update active nav + slide the indicator
     navItems.forEach(item => item.classList.remove('active'));
     if (triggerEl) triggerEl.classList.add('active');
+    moveNavIndicator();
 
     // Close detail panel
     closeDetailPanel();
+
+    // Scroll to top for a clean scene change (the page fades in)
+    window.scrollTo({ top: 0, behavior: 'auto' });
 
     // Load page
     content.innerHTML = PAGES[page];
@@ -212,28 +358,92 @@ function navigate(page, evt) {
         initScrollCue();
         initBackgroundVideos();
     }
+
+    // Hand the freshly-rendered subtree to the shared motion engine.
+    if (window.Motion) Motion.scan(content);
 }
 
 // Full-bleed background video (mid-page cinematic break): plays only while
 // the section is actually on screen, starting once the user scrolls it into
 // view and pausing once scrolled past -- no need for a separate timer-based
 // fade.
+// Cinematic establishing-shot video. Loads lazily from data-src, blends into
+// the page (the fallback CSS scene shows until/unless the file is available),
+// plays only while in view, and respects reduced-motion (first frame, no
+// autoplay). If the file is missing, the layout is untouched — the ambient
+// fallback scene simply remains.
 function initBackgroundVideos() {
-    const videos = document.querySelectorAll('.bg-video');
-    if (!videos.length) return;
+    const figure = document.getElementById('cinematic-video');
+    const video = document.getElementById('history-break-video');
+    if (!figure || !video) return;
 
+    const reduce = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Wire the source from data-src (kept off `src` so nothing fetches until
+    // we decide to). preload="metadata" so only headers/first frame load now.
+    const src = video.getAttribute('data-src');
+    if (src && !video.src) video.src = src;
+
+    let ready = false;
+
+    function markReady() {
+        if (ready) return;
+        ready = true;
+        figure.classList.remove('is-loading');
+        figure.classList.add('has-video');     // fades the real video in over the fallback
+    }
+    function markFailed() {
+        // File missing/unsupported — keep the graceful fallback scene.
+        figure.classList.remove('has-video');
+        figure.classList.add('is-loading', 'no-video');
+    }
+
+    // A frame is available to show.
+    video.addEventListener('loadeddata', markReady, { once: true });
+    video.addEventListener('canplay', markReady, { once: true });
+    // Missing file or decode failure → fallback.
+    video.addEventListener('error', markFailed, { once: true });
+    video.addEventListener('stalled', () => { if (!ready) markFailed(); });
+
+    if (reduce) {
+        // Reduced motion: show the first frame, never autoplay.
+        video.removeAttribute('loop');
+        video.addEventListener('loadeddata', () => {
+            try { video.currentTime = 0.05; } catch (e) {}
+            video.pause();
+        }, { once: true });
+        video.load();
+        return;
+    }
+
+    // Play only while the establishing shot is on screen.
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const video = entry.target;
             if (entry.isIntersecting) {
+                if (ready) figure.classList.add('is-revealed');
                 video.play().catch(() => {});
             } else {
                 video.pause();
             }
         });
-    }, { threshold: 0.35 });
+    }, { threshold: 0.3 });
+    observer.observe(figure);
 
-    videos.forEach(video => observer.observe(video));
+    // Reveal the figure when it enters view even before the video is ready
+    // (the fallback scene gets the same gentle fade-in / scale settle).
+    const revealObs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                revealObs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.25 });
+    revealObs.observe(figure);
+
+    // Kick off the load.
+    video.load();
 }
 
 // Scroll cue: a bouncing "scroll" hint pinned to the bottom of the
@@ -305,11 +515,60 @@ function initScrubTimeline() {
 window.addEventListener('DOMContentLoaded', () => {
     navigate('history');
     initHeaderAutoHide();
+    initNavIndicator();
 });
 
-// Auto-hiding header: slides up out of view on scroll-down, slides back in
-// on scroll-up. Ignored near the very top of the page so the header doesn't
-// flicker while the user is still reading the first screen.
+// ---------------------------------------------------------------------------
+// Sliding nav indicator: a single glass pill glides under the active item,
+// and previews the hovered item — "hover indicators glide naturally."
+// ---------------------------------------------------------------------------
+function moveNavIndicator(target) {
+    const nav = document.getElementById('nav');
+    const indicator = document.getElementById('nav-indicator');
+    if (!nav || !indicator) return;
+    const el = target || nav.querySelector('.nav-item.active');
+    if (!el) return;
+    indicator.style.transform = `translate(${el.offsetLeft}px, -50%)`;
+    indicator.style.width = `${el.offsetWidth}px`;
+    indicator.classList.add('is-ready');
+
+    // On the mobile horizontal scroller (indicator hidden) keep the active
+    // item comfortably in view without using scrollIntoView.
+    if (!target && nav.scrollWidth > nav.clientWidth + 4) {
+        const active = nav.querySelector('.nav-item.active');
+        if (active) {
+            const desired = active.offsetLeft - 16;
+            nav.scrollTo({ left: Math.max(0, desired), behavior: 'smooth' });
+        }
+    }
+}
+
+function initNavIndicator() {
+    const nav = document.getElementById('nav');
+    const indicator = document.getElementById('nav-indicator');
+    if (!nav || !indicator) return;
+
+    nav.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            indicator.classList.add('is-hovering');
+            moveNavIndicator(item);
+        });
+    });
+    nav.addEventListener('mouseleave', () => {
+        indicator.classList.remove('is-hovering');
+        moveNavIndicator();
+    });
+
+    // Make the active pill visible from the first paint, then re-measure once
+    // fonts/layout settle so its position/width are exact.
+    indicator.classList.add('is-ready');
+    requestAnimationFrame(() => moveNavIndicator());
+    setTimeout(() => moveNavIndicator(), 350);
+    window.addEventListener('resize', () => moveNavIndicator());
+}
+
+// Auto-hiding header that also crystallizes into glass once scrolled away
+// from the top: transparent over the hero, frosted while reading.
 function initHeaderAutoHide() {
     const header = document.querySelector('.header');
     if (!header) return;
@@ -317,14 +576,15 @@ function initHeaderAutoHide() {
     let lastY = window.scrollY;
     let ticking = false;
 
-    // Small dead-zone (16px) so the header doesn't sit forced-visible while
-    // page content has already scrolled up underneath it, and a 4px scroll
-    // delta threshold so tiny/jittery scroll events (touchpads, momentum)
-    // don't flicker the header in and out.
     function onScroll() {
         const currentY = window.scrollY;
         const delta = currentY - lastY;
 
+        // glass state
+        if (currentY > 24) header.classList.add('header-scrolled');
+        else header.classList.remove('header-scrolled');
+
+        // auto-hide
         if (currentY <= 16) {
             header.classList.remove('header-hidden');
         } else if (delta > 4) {
@@ -343,6 +603,7 @@ function initHeaderAutoHide() {
             requestAnimationFrame(onScroll);
         }
     }, { passive: true });
+    onScroll();
 }
 
 // Count-up stat strip: starts the instant the preloader's eyelids finish

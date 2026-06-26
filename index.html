@@ -3,11 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISO 20022 Academy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <title>ISO 20022 Academy — How money moves around the world</title>
+    <meta name="description" content="An interactive documentary about how money moves around the world, told through ISO 20022.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,18..72,400;0,18..72,500;1,18..72,400;1,18..72,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+    <!-- AMBIENT BACKGROUND — slow-evolving emerald aurora, driven by scroll -->
+    <div class="ambient" aria-hidden="true">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+        <div class="ambient-grain"></div>
+    </div>
+
     <!-- INTRO PRELOADER -->
     <div class="preloader" id="preloader" aria-hidden="true">
         <div class="preloader-currency" id="preloader-currency">
@@ -22,27 +32,34 @@
     </div>
 
     <!-- HEADER -->
-    <header class="header">
+    <header class="header" id="header">
         <div class="header-left">
-            <a class="logo" href="#/">
-                <div class="logo-icon">💳</div>
-                <span>ISO 20022</span>
+            <a class="logo" href="#/" onclick="navigate('history', event)">
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" width="20" height="20"><path d="M7 20 L16 7 L25 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="24" r="2.2" fill="currentColor"/></svg>
+                </div>
+                <span class="logo-text">ISO&nbsp;20022 <em>Academy</em></span>
             </a>
 
-            <nav class="nav">
+            <nav class="nav" id="nav">
                 <button class="nav-item active" data-page="history" onclick="navigate('history', event)">History</button>
                 <button class="nav-item" data-page="journey" onclick="navigate('journey', event)">Learning Journey</button>
                 <button class="nav-item" data-page="playground" onclick="navigate('playground', event)">Playground</button>
                 <button class="nav-item" data-page="glossary" onclick="navigate('glossary', event)">Glossary</button>
+                <span class="nav-indicator" id="nav-indicator" aria-hidden="true"></span>
             </nav>
         </div>
 
         <div class="header-right">
-			<div class="theme-toggle" onclick="toggleTheme()">
+			<div class="theme-toggle" onclick="toggleTheme()" role="button" aria-label="Toggle theme" tabindex="0">
 				<div class="toggle-thumb"></div>
 			</div>
         </div>
     </header>
+
+    <!-- top-of-page scroll progress rail -->
+    <div class="scroll-rail" aria-hidden="true"><div class="scroll-rail-fill" id="scroll-rail-fill"></div></div>
+
     <!-- MAIN CONTAINER -->
     <div class="main-container">
         <!-- Sidebar (collapsible later) -->
@@ -62,8 +79,21 @@
     </div>
 
     <script src="assets/js/data.js"></script>
+    <script src="assets/js/motion.js"></script>
     <script src="assets/js/ui.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/preloader.js"></script>
+
+    <template id="__bundler_thumbnail" data-bg-color="#060A09">
+        <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+            <rect width="1200" height="800" fill="#060A09"/>
+            <circle cx="600" cy="360" r="260" fill="#0d2a20"/>
+            <rect x="470" y="250" width="260" height="260" rx="74" fill="#10B981"/>
+            <path d="M540 430 L600 320 L660 430" fill="none" stroke="#04130D" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="600" cy="470" r="15" fill="#04130D"/>
+            <text x="600" y="640" font-family="Plus Jakarta Sans, sans-serif" font-size="58" font-weight="800" fill="#F4F8F6" text-anchor="middle" letter-spacing="-1">ISO 20022</text>
+            <text x="600" y="694" font-family="JetBrains Mono, monospace" font-size="24" fill="#8FA39B" text-anchor="middle" letter-spacing="6">ACADEMY</text>
+        </svg>
+    </template>
 </body>
 </html>

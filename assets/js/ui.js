@@ -218,8 +218,19 @@ const HERO_VIDEO_FILLER = {
     aspect: '16:9',
     duration: '20–30s',
     concept: 'A single establishing shot: Bob (offshore, evening) on one side of the screen, Sweety (back home, daytime) on the other, with a thin animated line of light traveling between them through small bank/clearing icons as the headline copy types in. Sets up the whole journey in one look.',
-    why: 'This is the page\'s signature shot — worth commissioning a proper custom motion graphic rather than stock footage once the route-line visual direction (see redesign doc) is finalized.'
+    why: 'The CSS scene above is the live, zero-dependency version of this shot. Worth commissioning a proper custom motion graphic to replace it down the line.'
 };
+
+// No illustration, no scroll animation -- the Bob/Sweety story is told
+// purely in big type.
+function renderJourneyStory() {
+    return `
+        <div class="journey-story" aria-hidden="true">
+            <span class="journey-story-line"><span class="journey-story-name">Bob</span> sends $400.</span>
+            <span class="journey-story-line"><span class="journey-story-name">Sweety</span> receives it.</span>
+        </div>
+    `;
+}
 
 function renderJourneyHero() {
     const total = learningJourney.length;
@@ -228,20 +239,17 @@ function renderJourneyHero() {
 
     return `
         <section class="journey-hero">
-            <div class="journey-hero-eyebrow">${completed === 0 ? 'Chapter One of Your Journey' : `Chapter ${Math.min(completed + 1, total)} of ${total}`}</div>
+            <div class="journey-hero-eyebrow"><span class="journey-hero-eyebrow-dot"></span>${completed === 0 ? 'Chapter One of Your Journey' : `Chapter ${Math.min(completed + 1, total)} of ${total}`}</div>
+
+            ${renderJourneyStory()}
+
             <h1 class="journey-hero-headline">
-                Bob just sent Sweety <span class="gradient-text">$400.</span><br>
-                Here's everywhere it goes before she sees it.
+                <span class="hl-line hl-1">Bob just sent Sweety <span class="gradient-text">$400.</span></span><br>
+                <span class="hl-line hl-2">Here's everywhere it goes before she sees it.</span>
             </h1>
             <p class="journey-hero-subhead">
                 A payment looks instant. It isn't. Behind that single transfer, six financial systems hand the money to each other — speaking the exact language you just learned ISO 20022 created. Follow it, step by step, as Bob and Sweety would live it.
             </p>
-
-            <div class="journey-hero-line" aria-hidden="true">
-                <span class="journey-hero-avatar">🧑‍💼<small>Bob</small></span>
-                <span class="journey-hero-line-track"><span class="journey-hero-line-dot"></span></span>
-                <span class="journey-hero-avatar">👩<small>Sweety</small></span>
-            </div>
 
             ${renderVideoFiller(HERO_VIDEO_FILLER, 'Hero video')}
 
@@ -301,9 +309,15 @@ function renderResumeBanner() {
 function getStopTier(mod, completedIndex) {
     const status = getModuleStatus(mod.id);
     if (status === 'completed') return 'done';
-    if (status === 'unlocked') return 'current';
+    // Free-roam means every incomplete chapter is technically "unlocked", but
+    // the page should still have ONE focal point: the current chapter (first
+    // incomplete) reads as "current", the one right after it as "next", and
+    // everything further out as the quiet "path ahead".
+    const current = getCurrentModule();
+    if (current && mod.id === current.id) return 'current';
     const index = learningJourney.findIndex(m => m.id === mod.id);
-    return index === completedIndex + 1 ? 'next' : 'ahead';
+    const currentIndex = current ? learningJourney.findIndex(m => m.id === current.id) : completedIndex + 1;
+    return index === currentIndex + 1 ? 'next' : 'ahead';
 }
 
 function renderRouteStop(mod, tier) {
@@ -366,6 +380,8 @@ function renderRoadmapView() {
             </div>
         </div>
     `;
+
+    if (window.Motion) Motion.scan(content);
 }
 
 function renderLessonProgress(mod) {
@@ -407,7 +423,7 @@ function renderProcessMaps(pillar, roleMap) {
             ${pillar.processMaps.map(map => `
                 <div class="process-map">
                     <div class="process-map-title">${map.title}</div>
-                    <div class="process-map-flow">
+                    <div class="process-map-flow" data-flow>
                         ${map.steps.map((step, i) => `
                             ${i > 0 ? '<span class="process-map-arrow">→</span>' : ''}
                             <span class="process-map-step">${label(step)}</span>
@@ -491,16 +507,16 @@ function loadLessonModule(moduleId) {
                 ${renderLessonProgress(mod)}
             </div>
 
-            <div class="lesson-article-header">
+            <div class="lesson-article-header" data-reveal="up">
                 ${renderGlossyIcon(mod.id, 64)}
                 <div class="journey-eyebrow">${mod.name}</div>
             </div>
-            <h2 class="lesson-title">${mod.storyTitle}</h2>
-            ${mod.story.map(p => `<p class="lesson-story-text">${p}</p>`).join('')}
+            <h2 class="lesson-title" data-reveal="up">${mod.storyTitle}</h2>
+            ${mod.story.map((p, i) => `<p class="lesson-story-text" data-reveal="up" data-reveal-delay="${i * 70}">${p}</p>`).join('')}
 
             ${renderVideoFiller(mod.videoFiller, `${mod.name} — scene`)}
 
-            ${mod.unlockedSkill ? `<div class="lesson-unlocked-skill"><strong>You now know:</strong> ${mod.unlockedSkill}</div>` : ''}
+            ${mod.unlockedSkill ? `<div class="lesson-unlocked-skill" data-reveal="up"><strong>You now know:</strong> ${mod.unlockedSkill}</div>` : ''}
 
             ${renderLessonWhy(pillar)}
             ${renderProcessMaps(pillar, mod.roleMap)}
@@ -508,30 +524,41 @@ function loadLessonModule(moduleId) {
             ${renderMessageSpotlight(mod.messageSpotlight)}
         </div>
     `;
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (window.Motion) Motion.scan(content);
 }
 
 // Render glossary
 function renderGlossary(items = DATA.glossary) {
     const glossaryGrid = document.getElementById('glossary-grid') || document.querySelector('.glossary-grid');
-    
+    const countEl = document.getElementById('glossary-count');
+
     if (!glossaryGrid) return;
 
+    if (countEl) {
+        countEl.textContent = `${items.length} of ${DATA.glossary.length} terms`;
+    }
+
     if (items.length === 0) {
-        glossaryGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 32px; color: var(--text-muted);">No terms found</div>';
+        glossaryGrid.innerHTML = '<div class="glossary-empty">No terms match your search.</div>';
     } else {
-        glossaryGrid.innerHTML = items.map(item => `
-            <div class="glossary-card">
+        glossaryGrid.innerHTML = items.map((item, i) => `
+            <div class="glossary-card" data-reveal="up" data-reveal-delay="${Math.min(i, 8) * 55}" data-tilt>
                 <div class="glossary-term">${item.term}</div>
                 <div class="glossary-definition">${item.definition}</div>
             </div>
         `).join('');
     }
+
+    if (window.Motion) Motion.scan(glossaryGrid);
 }
 
 function filterGlossary(query) {
+    const q = query.trim().toLowerCase();
     const filtered = DATA.glossary.filter(item =>
-        item.term.toLowerCase().includes(query.toLowerCase()) ||
-        item.definition.toLowerCase().includes(query.toLowerCase())
+        item.term.toLowerCase().includes(q) ||
+        item.definition.toLowerCase().includes(q)
     );
     renderGlossary(filtered);
 }
@@ -540,7 +567,7 @@ function filterGlossary(query) {
 function toggleTheme() {
     const toggle = document.querySelector('.theme-toggle');
     const isDark = toggle.classList.contains('active');
-    
+
     if (isDark) {
         setTheme('light');
         toggle.classList.remove('active');
@@ -552,7 +579,7 @@ function toggleTheme() {
 
 function setTheme(theme) {
     const toggle = document.querySelector('.theme-toggle');
-    
+
     if (theme === 'dark') {
         document.body.classList.remove('light-mode');
         toggle.classList.add('active');
@@ -562,13 +589,6 @@ function setTheme(theme) {
         toggle.classList.remove('active');
         localStorage.setItem('iso-theme', 'light');
     }
-}
-
-// Initialize theme from localStorage
-if (localStorage.getItem('iso-theme') === 'light') {
-    setTheme('light');
-} else {
-    setTheme('dark');
 }
 
 // Initialize theme from localStorage
