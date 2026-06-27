@@ -78,4 +78,5 @@ const handler = async function(event, context) {
 };
 
 // Scheduled for 8:00 AM and 8:00 PM
+const { schedule } = require("@netlify/functions");
 module.exports.handler = schedule("0 8,20 * * *", handler);
