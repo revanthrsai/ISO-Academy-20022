@@ -67,19 +67,32 @@ const PAGES = {
                     <div class="hero-vignette"></div>
                 </div>
 
+                <!-- Animated financial stream: flowing currency symbols + ISO jargon -->
+                <div class="hero-stream" aria-hidden="true">
+                    <span class="hero-token is-sym" style="left:5%;  --d:21s; --delay:-2s;  --size:64px; --op:.18; --drift:30px;">&#8377;</span>
+                    <span class="hero-token" style="left:11%; --d:26s; --delay:-9s;  --size:18px; --op:.30; --drift:-40px;">SWIFT</span>
+                    <span class="hero-token is-sym" style="left:17%; --d:18s; --delay:-5s;  --size:40px; --op:.28; --drift:24px;">$</span>
+                    <span class="hero-token" style="left:23%; --d:30s; --delay:-14s; --size:15px; --op:.24; --drift:50px;">IBAN</span>
+                    <span class="hero-token is-sym" style="left:29%; --d:23s; --delay:-1s;  --size:88px; --op:.14; --drift:-20px;">&euro;</span>
+                    <span class="hero-token" style="left:35%; --d:27s; --delay:-18s; --size:16px; --op:.32; --drift:34px;">PACS</span>
+                    <span class="hero-token" style="left:41%; --d:20s; --delay:-7s;  --size:20px; --op:.26; --drift:-48px;">GROSS</span>
+                    <span class="hero-token is-sym" style="left:47%; --d:25s; --delay:-12s; --size:52px; --op:.20; --drift:40px;">&pound;</span>
+                    <span class="hero-token" style="left:53%; --d:31s; --delay:-3s;  --size:15px; --op:.30; --drift:-30px;">UETR</span>
+                    <span class="hero-token is-sym" style="left:59%; --d:19s; --delay:-16s; --size:72px; --op:.16; --drift:22px;">&yen;</span>
+                    <span class="hero-token" style="left:65%; --d:28s; --delay:-6s;  --size:17px; --op:.28; --drift:46px;">CAMT</span>
+                    <span class="hero-token" style="left:71%; --d:24s; --delay:-20s; --size:16px; --op:.24; --drift:-36px;">NET</span>
+                    <span class="hero-token is-sym" style="left:77%; --d:22s; --delay:-4s;  --size:46px; --op:.24; --drift:28px;">$</span>
+                    <span class="hero-token" style="left:83%; --d:29s; --delay:-11s; --size:18px; --op:.30; --drift:-44px;">BIC</span>
+                    <span class="hero-token" style="left:89%; --d:26s; --delay:-15s; --size:15px; --op:.26; --drift:32px;">PAIN</span>
+                    <span class="hero-token is-sym" style="left:94%; --d:20s; --delay:-8s;  --size:56px; --op:.18; --drift:-26px;">&#8377;</span>
+                    <span class="hero-token" style="left:14%; --d:33s; --delay:-22s; --size:14px; --op:.22; --drift:38px;">ISO 20022</span>
+                    <span class="hero-token" style="left:62%; --d:34s; --delay:-25s; --size:14px; --op:.22; --drift:-34px;">MX</span>
+                </div>
+
                 <div class="hero-inner">
                     <div class="hero-eyebrow hl-line"><span class="hero-eyebrow-dot"></span>Interactive Academy &middot; ISO&nbsp;20022</div>
-                    <h1 class="hero-headline">
-                        <span class="hl-line">How money moves</span>
-                        <span class="hl-line">around the <span class="gradient-text">world.</span></span>
-                    </h1>
-                    <p class="hero-sub hl-line">
-                        Not documentation &mdash; an interactive documentary. Follow a single payment across
-                        banks, borders and systems, and discover the hidden language that lets the world&rsquo;s
-                        financial system speak as one: <strong>ISO&nbsp;20022</strong>.
-                    </p>
                     <div class="hero-cta hl-line">
-                        <button class="btn" data-magnetic onclick="navigate('journey', event)">Start the Journey <span class="btn-arrow">&rarr;</span></button>
+                        <button class="btn" onclick="navigate('journey', event)">Start the Journey <span class="btn-arrow">&rarr;</span></button>
                         <button class="btn btn-ghost" onclick="window.scrollTo({top: (document.querySelector('.story-section')||{}).offsetTop - 60, behavior:'smooth'})">Explore the story</button>
                     </div>
                 </div>

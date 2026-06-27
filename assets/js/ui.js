@@ -435,15 +435,27 @@ function renderRoadmapView() {
 
     content.innerHTML = `
         <div class="page">
-            ${renderJourneyHero()}
-            ${renderResumeBanner()}
-            ${renderMasteryRing()}
-
-            <div class="roadmap-track" id="roadmap-pipeline">
-                ${renderRouteLine()}
-            </div>
-
-            ${renderDeeperLayers()}
+            <section class="coming-soon">
+                <div class="coming-soon-card">
+                    <div class="coming-soon-glow" aria-hidden="true"></div>
+                    <div class="coming-soon-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.4"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></svg></div>
+                    <div class="coming-soon-eyebrow"><span class="coming-soon-dot"></span>In Development</div>
+                    <h1 class="coming-soon-title">Coming Soon: <span class="gradient-text">Guided Curriculums</span><br>for BAs &amp; Engineers</h1>
+                    <p class="coming-soon-sub">Structured, role-based learning paths that take you from first principles to production-ready ISO&nbsp;20022 fluency — one for the people who read the messages, one for the people who build against them.</p>
+                    <div class="coming-soon-tracks">
+                        <div class="cs-track">
+                            <div class="cs-track-role">For Business Analysts</div>
+                            <div class="cs-track-desc">Message flows, business domains and the reasoning behind every field.</div>
+                        </div>
+                        <div class="cs-track">
+                            <div class="cs-track-role">For Engineers</div>
+                            <div class="cs-track-desc">Schemas, validation rules and building real integrations against the standard.</div>
+                        </div>
+                    </div>
+                    <div class="coming-soon-progress"><span class="coming-soon-progress-fill"></span></div>
+                    <div class="coming-soon-note">Currently in design · curriculum stops are being authored</div>
+                </div>
+            </section>
         </div>
     `;
 
