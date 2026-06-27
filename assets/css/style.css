@@ -770,6 +770,53 @@ body.light-mode .ambient-grain { opacity: 0.015; }
     animation: slideInRight 0.3s ease;
 }
 
+/* ===== MESSAGE EXPLORER POPUP (Phase 7) =====
+   An "Outlook-style" reading window: centered card over a dimmed, blurred
+   backdrop. Reuses .detail-panel-content for the inner layout. */
+.msg-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 56px 20px;
+    background: rgba(4, 8, 7, 0.55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    overflow-y: auto;
+}
+.msg-modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+.msg-modal {
+    width: min(580px, 100%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    transform: translateY(14px) scale(0.985);
+    transition: transform 0.22s ease;
+    margin: auto 0;
+}
+.msg-modal-overlay.open .msg-modal {
+    transform: none;
+}
+.msg-modal .detail-panel-content {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    animation: none;
+    padding: 32px;
+}
+@media (max-width: 640px) {
+    .msg-modal-overlay { padding: 20px 12px; }
+}
+
 @keyframes slideInRight {
     from {
         transform: translateX(100%);

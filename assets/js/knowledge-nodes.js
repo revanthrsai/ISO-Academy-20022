@@ -77,7 +77,7 @@ const knowledgeNodes = {
         // --- Beat 2: Who feels this ---
         whoFeelsIt: [
             { who: 'A bank building a new payment system', pain: 'Without a shared vocabulary, every team reinvents how to write a name, an amount, an account — and none of them agree.' },
-            { who: 'Anyone migrating off the old SWIFT MT format', pain: 'Mapping legacy messages becomes guesswork done one field at a time, and data quietly falls on the floor.' },
+            { who: 'Anyone migrating off the old SWIFT MT format', pain: 'Mapping legacy messages becomes guesswork done one field at a time, and data quietly falls on the floor. (MT = the old SWIFT Message Type; MX = the new ISO 20022 style that replaces it.)' },
             { who: 'Sweety, waiting at the other end', pain: "If the two banks disagree on what a field means, her money is delayed or her name comes through wrong." }
         ],
 
@@ -94,7 +94,7 @@ const knowledgeNodes = {
 
         // --- Beat 4: How the world solved it ---
         worldProcess: {
-            summary: "Instead of each bank speaking its own dialect, everyone agrees on one dictionary of meanings first, then on how to write those meanings down.",
+            summary: "Instead of each bank speaking its own dialect, everyone agrees on one dictionary of meanings first, then on how to write those meanings down. It works like a box of Lego: because every block clicks onto the same studs, a piece built for a payment snaps straight into a securities or trade message without being re-cut.",
             participants: [
                 { role: 'Standards Body (ISO)', plain: 'Keeps the one shared dictionary everyone draws from.', icon: '🏛️' },
                 { role: 'Financial Institution', plain: "Bob's bank and Sweety's bank — they speak the shared language.", icon: '🏦' },
@@ -138,7 +138,7 @@ const knowledgeNodes = {
 
         // --- Beat 9: You can now... ---
         earnedSkill: "You can now spot the same four building blocks — sender, receiver, amount, identifier — inside any ISO 20022 message you ever see.",
-        relatedNodes: ['payments', 'fx', 'cards'],
+        relatedNodes: ['metamodel', 'payments', 'fx', 'cards'],
         glossaryTerms: ['Debtor', 'Creditor', 'XML Schema', 'MT Format', 'Settlement']
     },
 
@@ -174,7 +174,7 @@ const knowledgeNodes = {
 
         // --- Beat 4: How the world solved it ---
         worldProcess: {
-            summary: "One common language carries the money (pain → pacs), and a matching set of statements and alerts tracks it afterward (camt).",
+            summary: "One common language carries the money — first the customer's request (pain, short for payment initiation), then the bank-to-bank transfer (pacs, payments clearing and settlement) — and a matching set of statements and alerts tracks it afterward (camt, cash management).",
             participants: [
                 { role: 'Debtor (Bob)', plain: 'starts the payment by instructing his bank', icon: '👤' },
                 { role: "Debtor Agent (Bob's Bank)", plain: 'sends the interbank transfer', icon: '🏦' },
@@ -188,7 +188,7 @@ const knowledgeNodes = {
 
         // --- Beat 5: How ISO models it ---
         semanticModel: {
-            summary: "ISO 20022 splits the work into three message families by WHO is talking to WHOM: customer↔bank (pain), bank↔bank (pacs), and bank→customer reporting (camt).",
+            summary: "ISO 20022 splits the work into three families by WHO is talking to WHOM: customer↔bank (pain = payment initiation), bank↔bank (pacs = clearing & settlement), and bank→customer reporting (camt = cash management).",
             roles: [
                 { concept: 'Debtor / Creditor', plain: 'the people at each end — Bob and Sweety' },
                 { concept: 'Debtor Agent / Creditor Agent', plain: 'their banks, acting on their behalf' },
@@ -222,15 +222,15 @@ const knowledgeNodes = {
 
         // --- Beat 8: What breaks ---
         breaks: [
-            { symptom: 'A clean payment freezes in compliance review.', cause: "Sweety's name was truncated to fit a legacy 35-character field, so screening flagged a partial match.", fix: 'Carry the full structured name and address that ISO 20022 allows.' },
+            { symptom: 'A clean payment freezes in compliance review.', cause: "Sweety's name was truncated to fit a legacy 35-character field, so screening flagged a partial match.", fix: "Carry the full structured name and address that ISO 20022 allows. Think of it as a smart passport: instead of cramming every detail onto one line — where a screening system might trip over a stray word like 'LONDON' — each fact gets its own clearly labelled box." },
             { symptom: "Bob's reference is useless for tracing the payment.", cause: 'An EndToEndId was filled with a placeholder like "NOT PROVIDED" instead of a real reference.', fix: 'Always populate a genuine, unique end-to-end reference and never alter it in transit.' },
             { symptom: 'A 2026 cross-border payment is rejected outright.', cause: "The address was unstructured free text, which the structured-address mandate no longer accepts.", fix: 'Use structured or hybrid address fields (town and country in their own tags).' }
         ],
 
         // --- Beat 9: You can now... ---
         earnedSkill: "You can now read a pacs.008 credit transfer and a camt.054 notification — and say exactly who's paying whom, and how the arrival gets confirmed.",
-        relatedNodes: ['foundations', 'trade', 'fx', 'cards'],
-        glossaryTerms: ['Clearing', 'Settlement', 'Creditor', 'Debtor', 'CBPR+', 'Reconciliation']
+        relatedNodes: ['identifiers', 'routing', 'networks', 'foundations'],
+        glossaryTerms: ['UETR', 'Clearing', 'Settlement', 'CBPR+', 'Reconciliation']
     },
 
     // =====================================================================
@@ -567,12 +567,309 @@ const knowledgeNodes = {
         earnedSkill: "You can now describe how a letter of credit lets two strangers trade across borders — and where Bob's salary really came from.",
         relatedNodes: ['payments', 'fx', 'foundations'],
         glossaryTerms: ['Settlement', 'Counterparty']
+    },
+
+    // =====================================================================
+    // GAP NODES (Phase 7) — the five layers the journey chapters point INTO.
+    // Reachable through ideas, not menus: every chapter's related-links and the
+    // roadmap's "deeper layers" rail open these. Same Lesson Spine as every
+    // other node, so renderKnowledgeLesson handles them unchanged.
+    // =====================================================================
+
+    // ---- The Dictionary: the three-layer metamodel ----------------------
+    metamodel: {
+        id: 'metamodel',
+        layer: 'dictionary',
+        title: 'The Three Layers',
+        icon: '🧬',
+        humanQuestion: "If the way we write a payment down changes in twenty years, does everything the world built on top of it have to be thrown away?",
+        whoFeelsIt: [
+            { who: 'A standards architect', pain: 'Tie meaning to one file format and every future technology shift forces a rewrite of the whole rulebook.' },
+            { who: "A bank's integration team", pain: 'When meaning and format are tangled, a tiny syntax change ripples into business logic that should never have cared.' },
+            { who: 'Anyone learning the standard', pain: 'Meeting cryptic tags first makes it feel like a file format, not a model of how value moves.' }
+        ],
+        story: {
+            lead: "Bob's $400 has a meaning — Bob pays Sweety — that has nothing to do with whether it's written one way or another, today or in twenty years.",
+            beats: [
+                "ISO 20022 keeps that meaning in a separate place from how it's written. It defines three layers.",
+                "Conceptual: what it MEANS — a debtor pays a creditor an amount. Logical: how it's STRUCTURED into reusable building blocks. Physical: how it's finally serialized, e.g. as XML.",
+                "Translate the bottom layer to a new format and the top two layers — the meaning and the structure — don't move."
+            ],
+            castPayoff: "You just learned why ISO 20022 is called a model, not a format: the meaning of Bob's payment survives any change in how it's written down."
+        },
+        worldProcess: {
+            summary: "One central dictionary of meanings feeds message structures, which are then auto-translated into physical formats by syntax engines — so the same meaning can wear many skins.",
+            participants: [
+                { role: 'Data Dictionary', plain: 'The static store of business meanings and components.', icon: '📚' },
+                { role: 'Business Process Catalogue', plain: 'The dynamic store of flows and validation contexts.', icon: '🗂️' },
+                { role: 'Syntax Engine', plain: 'Auto-translates a logical model into a physical format.', icon: '⚙️' }
+            ],
+            flow: ['Conceptual (meaning)', 'Logical (structure)', 'Physical (XML / JSON)', 'Same meaning, any skin']
+        },
+        semanticModel: {
+            summary: "The three levels are the academy's mental backbone. Concept = what it means; Logical = the reusable components it's built from; Physical = the bytes on the wire. Everything else in this course hangs off this idea.",
+            roles: [
+                { concept: 'Conceptual Level', plain: 'the business meaning — debtor, creditor, amount — independent of any format' },
+                { concept: 'Logical Level', plain: 'message components: reusable structured blocks, like Lego, shared across messages' },
+                { concept: 'Physical Level', plain: 'the serialization — XML today, potentially JSON tomorrow' },
+                { concept: 'Data Dictionary', plain: 'the single source of every business element and type' }
+            ]
+        },
+        messages: [],
+        xml: {
+            intro: "Here's the same payment at the physical level. The point isn't the tags — it's that this layer could be swapped for JSON without touching the meaning above it.",
+            code: '<!-- PHYSICAL layer (XML) -->\n<CdtTrfTxInf>\n  <Dbtr><Nm>Bob</Nm></Dbtr>\n  <Cdtr><Nm>Sweety</Nm></Cdtr>\n  <Amt Ccy="USD">400.00</Amt>\n</CdtTrfTxInf>\n<!-- The CONCEPT "a debtor pays a creditor" stays identical in JSON. -->',
+            tagGlossary: [
+                { tag: 'CdtTrfTxInf', plain: 'Credit Transfer Transaction — a logical building block, reused across many messages.' },
+                { tag: 'Dbtr / Cdtr', plain: 'Conceptual roles (debtor, creditor) made physical.' }
+            ]
+        },
+        breaks: [
+            { symptom: 'A team rewrites business logic for a format change.', cause: 'They coded against the physical XML instead of the logical model.', fix: 'Bind to the logical components; let the syntax engine handle physical formats.' },
+            { symptom: 'Two banks "implement ISO 20022" and still don\'t interoperate.', cause: 'They agreed on tags but not on the conceptual meanings underneath.', fix: 'Align at the dictionary level first, syntax second.' }
+        ],
+        earnedSkill: "You can now explain ISO 20022 as a three-layer model — meaning, structure, serialization — and say why XML is just the bottom layer.",
+        relatedNodes: ['foundations', 'identifiers', 'payload'],
+        glossaryTerms: ['XML Schema', 'Data Dictionary', 'MT Format']
+    },
+
+    // ---- The Networks: regional dialects --------------------------------
+    networks: {
+        id: 'networks',
+        layer: 'networks',
+        title: 'Regional Dialects',
+        icon: '🌐',
+        humanQuestion: "If the whole world finally agreed on one language for money, why does the same payment still get rejected when it crosses from one country's system into another's?",
+        whoFeelsIt: [
+            { who: 'A bank routing a cross-border payment', pain: "A payment that's perfect for one network gets rejected by the next because of a local rule it never knew about." },
+            { who: 'An operations analyst', pain: 'Chasing rejects caused by a missing codeword, or a field one network strips and another requires.' },
+            { who: 'Bob, whose money is stuck', pain: "His transfer sits in limbo while two systems disagree on a formatting rule he'll never see." }
+        ],
+        story: {
+            lead: "Bob's $400 leaves on the global SWIFT network, but to reach Sweety it may drop into a domestic system with its own house rules.",
+            beats: [
+                "Everyone speaks ISO 20022 — but like English, it has dialects. The base standard is customized by usage guidelines.",
+                "CBPR+ governs cross-border on SWIFT. HVPS+ aligns high-value systems. Then each market — TARGET2 in the eurozone, CHAPS in the UK, Fedwire and FedNow in the US — adds its own constraints.",
+                "TARGET2 demands specific routing codewords; some networks strip optional fields for throughput; addresses must be structured. Miss a local rule and the payment is rejected at the border."
+            ],
+            castPayoff: "You just learned why 'ISO 20022 compliant' isn't enough on its own — the dialect of the network you're entering decides whether the payment passes."
+        },
+        worldProcess: {
+            summary: "Usage guidelines sit on top of the base standard, each tightening rules for a network. A payment must satisfy the dialect of every network it touches.",
+            participants: [
+                { role: 'CBPR+', plain: 'Cross-border + reporting rules on the SWIFT network.', icon: '🌍' },
+                { role: 'HVPS+', plain: 'High-value payment-system alignment for market infrastructures.', icon: '🏛️' },
+                { role: 'Market Infrastructure', plain: 'TARGET2, CHAPS, Fedwire, FedNow — each with local constraints.', icon: '🏦' }
+            ],
+            flow: ['Base ISO 20022', 'CBPR+ / HVPS+ guideline', 'Domestic rules (TARGET2 / CHAPS / Fedwire)', 'Validated at each border']
+        },
+        semanticModel: {
+            summary: "A dialect is a set of extra validation rules layered onto the same semantic model — it never changes what a debtor or creditor means, only which fields are required, restricted, or stripped.",
+            roles: [
+                { concept: 'Usage Guideline', plain: "a network's tightened ruleset on top of the base standard" },
+                { concept: 'Codeword', plain: 'a required value (e.g. an RTGS — real-time gross settlement — routing codeword) a network insists on' },
+                { concept: 'Character-set / field restriction', plain: 'which characters and optional fields a network allows' }
+            ]
+        },
+        messages: [
+            { code: 'PACS.008', businessName: 'FI-to-FI Customer Credit Transfer', plainRole: "the credit transfer that must satisfy every network's dialect as it routes" }
+        ],
+        xml: {
+            intro: "A pacs.008 crossing into a domestic system may need a service-level or local-instrument codeword the global version didn't carry.",
+            code: '<PmtTpInf>\n  <SvcLvl><Cd>G001</Cd></SvcLvl>\n  <LclInstrm><Prtry>TARGET2</Prtry></LclInstrm>\n</PmtTpInf>',
+            tagGlossary: [
+                { tag: 'SvcLvl/Cd', plain: 'Service level — the agreed processing level for this payment.' },
+                { tag: 'LclInstrm', plain: 'Local instrument — the codeword a domestic network uses to route.' }
+            ]
+        },
+        breaks: [
+            { symptom: 'Payment rejected entering a domestic network.', cause: 'A required RTGS codeword for that network was missing.', fix: "Apply the destination network's HVPS+ / local market practice before routing." },
+            { symptom: 'Data silently dropped between networks.', cause: 'One network strips optional fields another needs.', fix: 'Carry mandatory data in the fields every dialect on the route preserves.' }
+        ],
+        earnedSkill: "You can now explain why one payment must satisfy several dialects — CBPR+, HVPS+, TARGET2, Fedwire — and what a routing codeword is for.",
+        relatedNodes: ['routing', 'payments', 'identifiers'],
+        glossaryTerms: ['CBPR+', 'HVPS+', 'Clearing', 'Settlement']
+    },
+
+    // ---- The Physics: routing & cover payments --------------------------
+    routing: {
+        id: 'routing',
+        layer: 'physics',
+        title: 'Routing & Cover Payments',
+        icon: '🛰️',
+        humanQuestion: "If Bob's bank and Sweety's bank have never dealt with each other, how does the money actually get from one to the other?",
+        whoFeelsIt: [
+            { who: 'A correspondent-banking operations team', pain: 'Two banks with no direct relationship still have to settle real funds — through a chain of intermediaries.' },
+            { who: 'A compliance officer', pain: "When the customer detail and the funds travel on different legs, it's hard to see the full picture for screening." },
+            { who: 'Bob and Sweety', pain: 'Neither sees the hidden chain of banks that has to be arranged before the money can land.' }
+        ],
+        story: {
+            lead: "Bob's bank in one country and Sweety's bank in another may have no account with each other at all.",
+            beats: [
+                "So the payment travels through intermediaries — correspondents — that each hold accounts with the next.",
+                "There are two ways. Serial: the customer payment itself is passed bank to bank down the chain. Cover: the customer payment goes direct to the creditor's bank, while a separate interbank transfer settles the actual funds through the correspondents — the 'cover'.",
+                "The cover leg is a financial-institution transfer that quietly funds the customer payment behind the scenes."
+            ],
+            castPayoff: "You just learned the difference between serial and cover routing — and that the money and the customer instruction don't always travel the same path."
+        },
+        worldProcess: {
+            summary: "When no direct relationship exists, banks route through correspondents. In a cover arrangement the customer credit transfer and its funding 'cover' move on separate legs that must be tied together.",
+            participants: [
+                { role: 'Debtor Agent', plain: "Sender's bank — starts the payment.", icon: '🏦' },
+                { role: 'Intermediary / Correspondent', plain: 'Holds accounts that bridge banks with no direct link.', icon: '🔗' },
+                { role: 'Creditor Agent', plain: "Beneficiary's bank — receives the customer payment.", icon: '🏛️' }
+            ],
+            flow: ['Debtor Agent', 'Customer transfer (direct)', 'Creditor Agent', '+ Cover transfer settles funds via correspondents']
+        },
+        semanticModel: {
+            summary: "Routing adds no new business meaning — it's about which path the funds take. The cover model splits one economic payment into a customer leg and an interbank funding leg, joined by a shared tracking reference.",
+            roles: [
+                { concept: 'Serial routing', plain: 'the customer payment is passed hop to hop down the chain' },
+                { concept: 'Cover routing', plain: 'customer payment goes direct; a separate interbank transfer settles the funds' },
+                { concept: 'Cover leg', plain: 'the financial-institution transfer that funds the customer payment' }
+            ]
+        },
+        messages: [
+            { code: 'PACS.008', businessName: 'FI-to-FI Customer Credit Transfer', plainRole: "the customer leg that reaches the creditor's bank" },
+            { code: 'PACS.009', businessName: 'FI Credit Transfer (COV)', plainRole: 'the cover leg that settles the funds through correspondents' }
+        ],
+        xml: {
+            intro: "In a cover, a pacs.009 COV carries the underlying customer payment's details so the funding leg can be matched to the customer leg.",
+            code: '<FICdtTrf>\n  <CdtTrfTxInf>\n    <SttlmMtd>COVE</SttlmMtd>\n    <UndrlygCstmrCdtTrf>\n      <Dbtr><Nm>Bob</Nm></Dbtr>\n      <Cdtr><Nm>Sweety</Nm></Cdtr>\n    </UndrlygCstmrCdtTrf>\n  </CdtTrfTxInf>\n</FICdtTrf>',
+            tagGlossary: [
+                { tag: 'SttlmMtd = COVE', plain: 'Settlement method "cover" — this is the funding leg.' },
+                { tag: 'UndrlygCstmrCdtTrf', plain: 'The underlying customer payment this cover funds.' }
+            ]
+        },
+        breaks: [
+            { symptom: "Cover and customer legs can't be reconciled.", cause: "The same tracking reference wasn't carried on both legs.", fix: 'Share one UETR across the customer leg and its cover.' },
+            { symptom: 'Screening misses context.', cause: 'The funds leg is seen without the customer detail.', fix: 'Use the underlying customer block so each leg carries the full picture.' }
+        ],
+        earnedSkill: "You can now explain how a payment crosses banks that have no direct relationship, and tell a serial route from a cover route.",
+        relatedNodes: ['identifiers', 'networks', 'payments'],
+        glossaryTerms: ['Cover Payment', 'Settlement', 'Clearing']
+    },
+
+    // ---- The Physics: tracking identifiers -------------------------------
+    identifiers: {
+        id: 'identifiers',
+        layer: 'physics',
+        title: 'Tracking Identifiers',
+        icon: '🔖',
+        humanQuestion: "Once Bob taps send, can anyone actually point to his exact payment among the millions moving that day — and prove it's the same one at every step?",
+        whoFeelsIt: [
+            { who: 'A customer chasing a missing payment', pain: 'Without one stable reference, "where is my money" becomes a phone call to every bank in the chain.' },
+            { who: 'An operations team', pain: "They confuse a per-hop transmission id with the customer's reference and match the wrong things." },
+            { who: 'A developer', pain: 'They generate a tracking id with the wrong format and the payment is rejected on a technicality.' }
+        ],
+        story: {
+            lead: "Bob's $400 passes through several banks. Each hand-off needs references — but not all references mean the same thing.",
+            beats: [
+                "There are three you must never confuse. A transmission reference identifies one hop and rotates at each bank. The customer's end-to-end reference stays the same the whole way, so Bob and Sweety can quote it.",
+                "And the global tracking reference — the UETR — is a single id, unique worldwide, that follows the payment across every bank from start to finish.",
+                "The UETR has a strict shape: 36 characters, lowercase, with fixed bits that prove its version. Get the format wrong and it's invalid."
+            ],
+            castPayoff: "You just learned the three identifiers every payments professional is asked to tell apart: the per-hop id, the end-to-end id, and the global UETR."
+        },
+        worldProcess: {
+            summary: "Identifiers let a payment be tracked and matched. Some are point-to-point and rotate; one is end-to-end and constant; the UETR is globally unique and enables real-time tracking across banks.",
+            participants: [
+                { role: 'Each Bank (hop)', plain: 'Generates its own transmission reference, fresh per hop.', icon: '🏦' },
+                { role: 'Originator', plain: 'Sets the end-to-end reference once; it must never change.', icon: '🧾' },
+                { role: 'Tracking Network', plain: "Uses the UETR to show the payment's status end to end.", icon: '🛰️' }
+            ],
+            flow: ['Transmission id (rotates per hop)', 'End-to-end id (constant)', 'UETR (globally unique, tracked)']
+        },
+        semanticModel: {
+            summary: "These are reference concepts, not money. The discipline is knowing scope: point-to-point vs end-to-end vs global — and respecting the UETR's exact format so it stays unique.",
+            roles: [
+                { concept: 'Transmission reference', plain: 'identifies a single hand-off; a new one each hop' },
+                { concept: 'End-to-end reference', plain: "the customer's own reference, unchanged across all hops" },
+                { concept: 'UETR', plain: 'a globally unique id (a UUID — Universally Unique Identifier, version 4) that tracks the whole payment' }
+            ]
+        },
+        messages: [
+            { code: 'PACS.008', businessName: 'FI-to-FI Customer Credit Transfer', plainRole: 'carries all three identifiers as it travels' }
+        ],
+        xml: {
+            intro: "Here are the three identifiers side by side. Note the UETR's lowercase hex and the fixed '4' marking its version.",
+            code: '<PmtId>\n  <InstrId>HOP-8842</InstrId>            <!-- rotates per hop -->\n  <EndToEndId>BOB-INV-400</EndToEndId>  <!-- constant end to end -->\n  <UETR>e8b1f0a2-4c3d-4f6a-9b2e-7c1d0a5f3e21</UETR>\n</PmtId>',
+            tagGlossary: [
+                { tag: 'InstrId', plain: 'Instruction id — point-to-point, regenerated each hop.' },
+                { tag: 'EndToEndId', plain: "The customer's reference — must survive every hop unchanged." },
+                { tag: 'UETR', plain: 'Globally unique UUID v4 tracking reference, lowercase, version bit 4.' }
+            ]
+        },
+        breaks: [
+            { symptom: 'UETR rejected.', cause: 'Uppercase letters, or wrong version / variant bits.', fix: 'Generate a proper RFC 4122 v4 UUID — lowercase, version bit 4 and variant 8/9/a/b. (RFC 4122 is just the internet standard that defines these random unique IDs.)' },
+            { symptom: "End-to-end reference shows 'NOT PROVIDED'.", cause: 'A placeholder was sent instead of a real customer reference.', fix: 'Populate a genuine end-to-end id; placeholders break tracking and reconciliation.' }
+        ],
+        earnedSkill: "You can now tell a transmission id from an end-to-end id from a UETR — the single most common ISO 20022 payments interview question.",
+        relatedNodes: ['routing', 'payments', 'metamodel'],
+        glossaryTerms: ['UETR', 'Reconciliation', 'Instruction']
+    },
+
+    // ---- The Payload: the envelope & extensions -------------------------
+    payload: {
+        id: 'payload',
+        layer: 'payload',
+        title: 'The Envelope & Extensions',
+        icon: '✉️',
+        humanQuestion: "When a bank needs to add something the standard never imagined, how does it do that without breaking everyone else's ability to read the payment?",
+        whoFeelsIt: [
+            { who: 'A bank with a local regulatory field', pain: 'It needs to carry extra data, but inventing a custom tag would make the payment unreadable elsewhere.' },
+            { who: 'A receiving system', pain: 'A non-standard addition can fail validation and bounce the whole payment.' },
+            { who: 'An integration engineer', pain: 'Header and body versions drift apart and the payment is rejected at the door.' }
+        ],
+        story: {
+            lead: "Bob's payment travels inside an envelope, and sometimes a bank needs to slip an extra note inside without rewriting the letter.",
+            beats: [
+                "Every business document rides with a Business Application Header — head.001 — that says who sent it, to whom, what type it is, and which version. The header and the document must stay aligned.",
+                "When extra data is genuinely needed, ISO 20022 provides a sanctioned slot: Supplementary Data. It lets a network add structured information inside the standard envelope without breaking validation.",
+                "There are disciplined ways to extend — supplementary data, type extension, and envelope packaging — and undisciplined ways that simply break interoperability."
+            ],
+            castPayoff: "You just learned that the payment is an envelope plus a header, and that there's a proper, validation-safe way to extend it."
+        },
+        worldProcess: {
+            summary: "A Business Application Header wraps each document, carrying routing and version metadata. Sanctioned extension mechanisms add custom data without breaking the schema.",
+            participants: [
+                { role: 'Business Application Header (head.001)', plain: 'The envelope metadata: from, to, type, version.', icon: '✉️' },
+                { role: 'Document', plain: 'The actual payment (e.g. a pacs.008) inside the envelope.', icon: '📄' },
+                { role: 'Supplementary Data', plain: 'The sanctioned slot for extra structured data.', icon: '➕' }
+            ],
+            flow: ['Business Application Header (head.001)', '+ Document (pacs.008)', 'Supplementary data (if needed)', 'One aligned envelope']
+        },
+        semanticModel: {
+            summary: "The header and extensions are about packaging, not payment meaning. Extending safely means using the standard's own slots so receivers still validate the message.",
+            roles: [
+                { concept: 'Business Application Header', plain: 'envelope metadata that travels with every document' },
+                { concept: 'Supplementary Data', plain: 'the official slot for extra structured information' },
+                { concept: 'Type / envelope extension', plain: 'schema-safe ways to extend without breaking parsers' }
+            ]
+        },
+        messages: [
+            { code: 'PACS.008', businessName: 'FI-to-FI Customer Credit Transfer', plainRole: 'the document carried inside the head.001 envelope' }
+        ],
+        xml: {
+            intro: "The header wraps the document; supplementary data adds extra structured fields without inventing non-standard tags.",
+            code: '<AppHdr>\n  <Fr>...</Fr><To>...</To>\n  <MsgDefIdr>pacs.008.001.08</MsgDefIdr>\n</AppHdr>\n<Document>\n  <FIToFICstmrCdtTrf>\n    <SplmtryData>...</SplmtryData>\n  </FIToFICstmrCdtTrf>\n</Document>',
+            tagGlossary: [
+                { tag: 'AppHdr / MsgDefIdr', plain: 'Business Application Header and the exact document type + version it wraps.' },
+                { tag: 'SplmtryData', plain: 'Supplementary Data — the sanctioned slot for extra structured content.' }
+            ]
+        },
+        breaks: [
+            { symptom: 'Message rejected at the gateway.', cause: 'Header version and document version drifted apart.', fix: 'Keep the head.001 MsgDefIdr aligned with the document version.' },
+            { symptom: 'Custom data breaks validation downstream.', cause: 'A non-standard tag was invented instead of using the sanctioned slot.', fix: 'Carry extras inside SplmtryData (or a proper type extension).' }
+        ],
+        earnedSkill: "You can now explain the Business Application Header and how supplementary data lets banks extend a payment without breaking it.",
+        relatedNodes: ['metamodel', 'networks', 'identifiers'],
+        glossaryTerms: ['Business Application Header', 'XML Schema', 'Structured Address']
     }
 
     // -----------------------------------------------------------------------
-    // All six journey chapters are now built (foundations + the five domains).
-    // Phase 7 will add the gap nodes: metamodel, networks, routing/cover, uetr,
-    // payload (head.001). Copy the schema template at the top for each.
+    // All six journey chapters + five gap nodes are now built. The graph is
+    // closed: every node links to 2-4 others, no dead ends.
     // -----------------------------------------------------------------------
 };
 

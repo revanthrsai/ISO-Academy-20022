@@ -1,85 +1,149 @@
 // UI Module - Handle interactive elements and detail panel
 
+// ---------------------------------------------------------------------------
+// Message Explorer (Phase 6) — each message opens as a full Lesson-Spine node,
+// concept BEFORE payload. The panel reads top-to-bottom as a story:
+//   business story → why it exists → who creates/receives → business process
+//   → visual flow → business components → message components → XML →
+//   validation → what breaks → interview questions → related messages.
+// The raw XML appears only after the business story, never first. Reuses
+// existing detail / spotlight / lesson CSS classes — no new styles.
+// ---------------------------------------------------------------------------
+// Phase 7 — the explorer now opens as a centered POPUP (an "Outlook-style"
+// reading window) over a dimmed backdrop, instead of the old slide-in side
+// panel. Same renderMessageNode content; click-outside or Esc closes it.
 function openDetailPanel(messageCode) {
     const message = getMessageByCode(messageCode);
     if (!message) return;
-
-    const panel = document.getElementById('detail-panel');
-    panel.classList.add('open');
-    panel.dataset.messageCode = messageCode;
-    panel.innerHTML = renderDetailPanelTabs(message, 'business');
+    let overlay = document.getElementById('msg-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'msg-modal-overlay';
+        overlay.className = 'msg-modal-overlay';
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailPanel(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailPanel(); });
+        document.body.appendChild(overlay);
+    }
+    overlay.dataset.messageCode = messageCode;
+    overlay.innerHTML = `<div class="msg-modal" role="dialog" aria-modal="true" aria-label="${message.code} details">${renderMessageNode(message)}</div>`;
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => overlay.classList.add('open'));
+    const body = overlay.querySelector('.detail-panel-content');
+    if (body) body.scrollTop = 0;
+    if (window.Motion) Motion.scan(overlay);
 }
 
-// Detail panel has two tabs: Business View (purpose, direction, use cases --
-// understand the message before its payload) and Technical View (fields,
-// XML structure -- the MDR-extraction layer surfaces here).
-function renderDetailPanelTabs(message, activeTab) {
+// A labelled block: monospace eyebrow label + free HTML body.
+function renderDetailSection(label, bodyHtml) {
+    if (!bodyHtml) return '';
+    return `
+        <div class="detail-section">
+            <div class="detail-label">${label}</div>
+            ${bodyHtml}
+        </div>`;
+}
+
+// Plain-English left → meaning right rows (business / message components,
+// validation). Reuses .spotlight-fields styling.
+function renderMeaningRows(rows) {
+    return `<div class="spotlight-fields">${rows.map(r => `
+        <div class="spotlight-field">
+            <span class="spotlight-field-tag">${r.tag}</span>
+            <span class="spotlight-field-meaning">${r.meaning}</span>
+        </div>`).join('')}</div>`;
+}
+
+function renderMessageNode(message) {
+    const n = message.node || {};
+
+    const flowHtml = (n.flow && n.flow.length) ? `
+        <div class="process-map">
+            <div class="process-map-flow" data-flow>
+                ${n.flow.map((step, i) => `${i > 0 ? '<span class="process-map-arrow">→</span>' : ''}<span class="process-map-step">${step}</span>`).join('')}
+            </div>
+        </div>` : '';
+
+    const bizCompHtml = (n.businessComponents && n.businessComponents.length)
+        ? renderMeaningRows(n.businessComponents.map(c => ({ tag: c.name, meaning: c.plain }))) : '';
+
+    const msgCompRows = (n.messageComponents && n.messageComponents.length)
+        ? n.messageComponents.map(c => ({ tag: c.tag, meaning: c.plain }))
+        : (message.fields || []).map(f => ({ tag: f, meaning: '' }));
+    const msgCompHtml = renderMeaningRows(msgCompRows);
+
+    const validationHtml = (n.validation && n.validation.length)
+        ? renderMeaningRows(n.validation.map(v => ({
+            tag: v.tag,
+            meaning: `${v.rule}<br><span style="opacity:.7"><strong>Fails when:</strong> ${v.fails}</span>`
+        }))) : '';
+
+    const breaksHtml = (n.breaks && n.breaks.length)
+        ? renderWhyCards(n.breaks.map(b => ({ label: b.symptom, text: `<strong>Why:</strong> ${b.cause}<br><strong>Fix:</strong> ${b.fix}` }))) : '';
+
+    const interviewHtml = (n.interview && n.interview.length) ? `
+        <div class="lesson-why-section">${n.interview.map(it => `
+            <div class="lesson-why-card">
+                <div class="lesson-why-label">Q · ${it.q}</div>
+                <p class="lesson-why-text">${it.a}</p>
+            </div>`).join('')}</div>` : '';
+
+    const relatedCodes = (n.related || []).filter(c => getMessageByCode(c));
+    const relatedHtml = relatedCodes.length ? `
+        <div class="tags">${relatedCodes.map(c => {
+            const m = getMessageByCode(c);
+            return `<span class="tag" style="cursor:pointer" title="${m.subtitle}" onclick="openDetailPanel('${c}')">${c} →</span>`;
+        }).join('')}</div>` : '';
+
     return `
         <div class="detail-panel-content">
+            <button onclick="closeDetailPanel()" aria-label="Close" style="cursor:pointer; background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:8px; padding:6px 12px; font-size:12px; letter-spacing:0.04em; margin-bottom:20px;">✕ Close</button>
+
             <div class="detail-header">
                 <div class="detail-title">${message.code}</div>
                 <div class="detail-subtitle">${message.subtitle}</div>
             </div>
 
-            <div class="detail-tabs">
-                <button class="detail-tab ${activeTab === 'business' ? 'active' : ''}" onclick="switchDetailTab('${message.code}', 'business')">Business View</button>
-                <button class="detail-tab ${activeTab === 'technical' ? 'active' : ''}" onclick="switchDetailTab('${message.code}', 'technical')">Technical View</button>
+            ${renderDetailSection('The Story', n.story ? `<p class="detail-description">${n.story}</p>` : `<p class="detail-description">${message.purpose}</p>`)}
+            ${renderDetailSection('Why This Message Exists', n.whyExists ? `<p class="detail-description">${n.whyExists}</p>` : '')}
+
+            ${renderDetailSection('Who Creates It', n.createdBy ? `<div class="detail-value">${n.createdBy}</div>` : `<div class="detail-value">${message.direction}</div>`)}
+            ${renderDetailSection('Who Receives It', n.receivedBy ? `<div class="detail-value">${n.receivedBy}</div>` : '')}
+
+            ${flowHtml ? renderDetailSection('Business Process', flowHtml) : ''}
+            ${bizCompHtml ? renderDetailSection('Business Components', bizCompHtml) : ''}
+            ${renderDetailSection('Message Components', msgCompHtml)}
+
+            <div class="detail-section">
+                <div class="detail-label">The XML — only now</div>
+                <div class="xml-editor-shell">
+                    <div class="xml-editor-toolbar">
+                        <span class="xml-editor-dot"></span>
+                        <span class="xml-editor-dot"></span>
+                        <span class="xml-editor-dot"></span>
+                        <span class="xml-editor-filename">${message.code.toLowerCase()}.xml</span>
+                    </div>
+                    <pre class="xml-editor xml-readonly"><code>${escapeHtml(message.example)}</code></pre>
+                </div>
             </div>
 
-            ${activeTab === 'business' ? renderDetailBusinessTab(message) : renderDetailTechnicalTab(message)}
+            ${validationHtml ? renderDetailSection('Validation Rules', validationHtml) : ''}
+            ${breaksHtml ? renderDetailSection('What Breaks', breaksHtml) : ''}
+            ${interviewHtml ? renderDetailSection('Interview Questions', interviewHtml) : ''}
+            ${relatedHtml ? renderDetailSection('Related Messages', relatedHtml) : ''}
         </div>
     `;
-}
-
-function renderDetailBusinessTab(message) {
-    return `
-        <div class="detail-section">
-            <div class="detail-label">Purpose</div>
-            <div class="detail-description">${message.purpose}</div>
-        </div>
-
-        <div class="detail-section">
-            <div class="detail-label">Direction</div>
-            <div class="detail-value">${message.direction}</div>
-        </div>
-
-        <div class="detail-section">
-            <div class="detail-label">Category</div>
-            <div class="detail-value">${message.category}</div>
-        </div>
-
-        <div class="detail-section">
-            <div class="detail-label">Use Cases</div>
-            <div class="tags">${message.useCases.map(uc => `<span class="tag">${uc}</span>`).join('')}</div>
-        </div>
-    `;
-}
-
-function renderDetailTechnicalTab(message) {
-    return `
-        <div class="detail-section">
-            <div class="detail-label">Key Fields</div>
-            <div class="tags">${message.fields.map(f => `<span class="tag">${f}</span>`).join('')}</div>
-        </div>
-
-        <div class="detail-section">
-            <div class="detail-label">XML Example</div>
-            <div class="xml-example">${escapeHtml(message.example)}</div>
-        </div>
-    `;
-}
-
-function switchDetailTab(messageCode, tab) {
-    const message = getMessageByCode(messageCode);
-    if (!message) return;
-    const panel = document.getElementById('detail-panel');
-    panel.innerHTML = renderDetailPanelTabs(message, tab);
 }
 
 function closeDetailPanel() {
+    const overlay = document.getElementById('msg-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        setTimeout(() => { if (overlay && !overlay.classList.contains('open')) overlay.innerHTML = ''; }, 240);
+    }
+    document.body.style.overflow = '';
+    // Legacy side panel (kept harmless): close it too if present.
     const panel = document.getElementById('detail-panel');
-    panel.classList.remove('open');
-    panel.innerHTML = '';
+    if (panel) { panel.classList.remove('open'); panel.innerHTML = ''; }
 }
 
 function escapeHtml(text) {
@@ -378,10 +442,41 @@ function renderRoadmapView() {
             <div class="roadmap-track" id="roadmap-pipeline">
                 ${renderRouteLine()}
             </div>
+
+            ${renderDeeperLayers()}
         </div>
     `;
 
     if (window.Motion) Motion.scan(content);
+}
+
+// Phase 7 — the five gap nodes surfaced as a discovery rail beneath the route
+// line, so the deeper layers aren't reachable ONLY by stumbling on a related
+// link. Reuses the existing .card component (design freeze respected).
+const GAP_NODE_IDS = ['metamodel', 'networks', 'routing', 'identifiers', 'payload'];
+function renderDeeperLayers() {
+    if (typeof getKnowledgeNode !== 'function') return '';
+    const nodes = GAP_NODE_IDS.map(getKnowledgeNode).filter(Boolean);
+    if (!nodes.length) return '';
+    return `
+        <div class="lesson-process-section" style="margin-top:48px">
+            <div class="journey-eyebrow">Go Deeper — Follow Your Curiosity</div>
+            <p class="section-description" style="margin-bottom:20px">The six chapters trace Bob's money. These five layers explain the machinery underneath — open any one, then follow where it links.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+                ${nodes.map(n => {
+                    const layer = (typeof IA_LAYERS !== 'undefined' && IA_LAYERS[n.layer]) ? IA_LAYERS[n.layer].title : '';
+                    return `<button class="card" style="cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:10px;align-items:flex-start" onclick="openKnowledgeNode('${n.id}')">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <span style="font-size:26px">${n.icon || '🔗'}</span>
+                            <span class="journey-eyebrow">${layer}</span>
+                        </div>
+                        <div style="font-weight:700;font-size:17px;color:var(--text)">${n.title}</div>
+                        <div style="font-size:13px;line-height:1.5;color:var(--text-muted)">${n.humanQuestion}</div>
+                        <span class="tag" style="margin-top:4px">Open →</span>
+                    </button>`;
+                }).join('')}
+            </div>
+        </div>`;
 }
 
 function renderLessonProgress(mod) {
@@ -459,7 +554,7 @@ function renderMessageSpotlight(spotlight) {
         <div class="lesson-spotlight-section">
             <div class="spotlight-header">
                 <div class="journey-eyebrow">Message Spotlight</div>
-                <h3 class="spotlight-title">${spotlight.title}${spotlight.code ? ` <span class="spotlight-code">${spotlight.code}</span>` : ''}</h3>
+                <h3 class="spotlight-title">${spotlight.title}${spotlight.code ? ` <span class="spotlight-code" style="cursor:pointer" onclick="openDetailPanel('${spotlight.code}')">${spotlight.code} →</span>` : ''}</h3>
                 <p class="spotlight-subtitle">${spotlight.subtitle}</p>
             </div>
 
@@ -550,7 +645,15 @@ function renderKnowledgeLesson(node, mod) {
     const msgsHtml = (node.messages && node.messages.length) ? `
         <div class="lesson-process-section">
             <div class="journey-eyebrow">The Messages</div>
-            ${renderFieldRows(node.messages.map(m => ({ tag: m.code, meaning: `<strong>${m.businessName}</strong> — ${m.plainRole}` })))}
+            <div class="spotlight-fields">
+                ${node.messages.map(m => {
+                    const exists = typeof getMessageByCode === 'function' && getMessageByCode(m.code);
+                    return `<div class="spotlight-field"${exists ? ` style="cursor:pointer" onclick="openDetailPanel('${m.code}')"` : ''}>
+                        <span class="spotlight-field-tag">${m.code}</span>
+                        <span class="spotlight-field-meaning"><strong>${m.businessName}</strong> — ${m.plainRole}${exists ? ' <span style="opacity:.55">· open in explorer →</span>' : ''}</span>
+                    </div>`;
+                }).join('')}
+            </div>
         </div>` : '';
 
     // Beat 7 -- tag glossary (each tag translated to plain English on sight).
@@ -563,27 +666,39 @@ function renderKnowledgeLesson(node, mod) {
         ? renderWhyCards(node.breaks.map(b => ({ label: b.symptom, text: `<strong>Why:</strong> ${b.cause}<br><strong>Fix:</strong> ${b.fix}` })))
         : '';
 
-    // Beat 9 -- related ideas as tags (clickable wiring arrives in Phase 7).
-    const relatedTitles = (node.relatedNodes || [])
+    // Beat 9 -- related ideas, now CLICKABLE (Phase 7). Related NODES open the
+    // node; glossary TERMS jump to the glossary filtered to that word. Splitting
+    // them lets each tag carry the right action — "links through ideas, not menus".
+    const relatedNodeLinks = (node.relatedNodes || [])
         .map(id => (typeof getKnowledgeNode === 'function' ? getKnowledgeNode(id) : null))
-        .filter(Boolean).map(n => n.title);
-    const connectTags = relatedTitles.concat(node.glossaryTerms || []);
-    const relatedHtml = connectTags.length ? `
+        .filter(Boolean);
+    const glossaryLinks = (node.glossaryTerms || []).filter(t =>
+        typeof DATA !== 'undefined' && DATA.glossary && DATA.glossary.some(g => g.term === t));
+    const relatedHtml = (relatedNodeLinks.length || glossaryLinks.length) ? `
         <div class="lesson-process-section">
             <div class="journey-eyebrow">Where This Connects</div>
-            <div class="tags">${connectTags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            ${relatedNodeLinks.length ? `<p class="lesson-story-text" style="margin-bottom:10px">You'll want to understand…</p>
+            <div class="tags" style="margin-bottom:18px">${relatedNodeLinks.map(n => `<span class="tag" style="cursor:pointer" title="${(n.humanQuestion || '').replace(/"/g, '&quot;')}" onclick="openKnowledgeNode('${n.id}')">${n.icon ? n.icon + ' ' : ''}${n.title} →</span>`).join('')}</div>` : ''}
+            ${glossaryLinks.length ? `<p class="lesson-story-text" style="margin-bottom:10px">Look up</p>
+            <div class="tags">${glossaryLinks.map(t => `<span class="tag" style="cursor:pointer" onclick="lookupGlossary('${t.replace(/'/g, "\\'")}')">${t}</span>`).join('')}</div>` : ''}
         </div>` : '';
+
+    const layerInfo = (typeof IA_LAYERS !== 'undefined' && IA_LAYERS[node.layer]) || null;
+    const headerIcon = mod
+        ? renderGlossyIcon(mod.id, 64)
+        : `<div class="glossy-icon" style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;border-radius:18px;background:var(--surface-alt,rgba(255,255,255,0.06));border:1px solid var(--border)">${node.icon || '🔗'}</div>`;
+    const headerLabel = mod ? mod.name : (layerInfo ? layerInfo.title : node.title);
 
     content.innerHTML = `
         <div class="page lesson-article">
             <div class="lesson-panel-top">
                 <button class="btn-back-roadmap" onclick="renderRoadmapView()">← Back to Roadmap</button>
-                ${renderLessonProgress(mod)}
+                ${mod ? renderLessonProgress(mod) : (layerInfo ? `<div class="lesson-progress-label">${layerInfo.title} · a deeper layer</div>` : '')}
             </div>
 
             <div class="lesson-article-header" data-reveal="up">
-                ${renderGlossyIcon(mod.id, 64)}
-                <div class="journey-eyebrow">${mod.name}</div>
+                ${headerIcon}
+                <div class="journey-eyebrow">${headerLabel}</div>
             </div>
 
             <!-- BEAT 1 — The Human Question -->
@@ -622,7 +737,7 @@ function renderKnowledgeLesson(node, mod) {
             <!-- BEAT 6 — The Messages -->
             ${msgsHtml}
 
-            ${renderVideoFiller(mod.videoFiller, `${mod.name} — scene`)}
+            ${mod ? renderVideoFiller(mod.videoFiller, `${mod.name} — scene`) : ''}
 
             <!-- BEAT 7 — Only now, the XML -->
             <div class="lesson-spotlight-section">
@@ -651,6 +766,28 @@ function renderKnowledgeLesson(node, mod) {
 
     window.scrollTo({ top: 0, behavior: 'auto' });
     if (window.Motion) Motion.scan(content);
+}
+
+// Open ANY knowledge node by id — a journey chapter (uses its module for the
+// header/progress/video) or a Phase-7 gap node (rendered with its IA-layer
+// label, no progress). This is how related-idea links and the roadmap's
+// "deeper layers" rail navigate the graph.
+function openKnowledgeNode(id) {
+    const node = (typeof getKnowledgeNode === 'function') ? getKnowledgeNode(id) : null;
+    if (!node) return;
+    closeDetailPanel();
+    const mod = (typeof learningJourney !== 'undefined') ? learningJourney.find(m => m.id === id) : null;
+    if (mod && typeof ProgressEngine !== 'undefined') ProgressEngine.markComplete(id);
+    renderKnowledgeLesson(node, mod || null);
+}
+
+// Jump to the glossary, filtered to one term (related-idea "Look up" chips).
+function lookupGlossary(term) {
+    if (typeof navigate === 'function') navigate('glossary');
+    const box = document.getElementById('glossary-search');
+    if (box) box.value = term;
+    if (typeof filterGlossary === 'function') filterGlossary(term);
+    window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 function loadLessonModule(moduleId) {

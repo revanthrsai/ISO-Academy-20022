@@ -13,7 +13,31 @@ const DATA = {
                 category: 'Cash Management',
                 useCases: ['Interim Reports', 'Daily Balance Reports', 'Account Summaries'],
                 fields: ['Rpt (Report)', 'Bal (Balance)', 'Ntry (Entries)', 'TtlCdtDbtAmt'],
-                example: '<Document>\n  <BkToCstmrReport>\n    <Rpt>\n      <Acct><IBAN>DE89370400440532013000</IBAN></Acct>\n      <Bal>9500.00</Bal>\n    </Rpt>\n  </BkToCstmrReport>\n</Document>'
+                example: '<Document>\n  <BkToCstmrReport>\n    <Rpt>\n      <Acct><IBAN>DE89370400440532013000</IBAN></Acct>\n      <Bal>9500.00</Bal>\n    </Rpt>\n  </BkToCstmrReport>\n</Document>',
+                node: {
+                    story: "Mid-morning, Sweety's treasurer wants to know what landed overnight — not at month-end, now. camt.052 is the intraday read on the account.",
+                    whyExists: "Businesses can't wait for the end-of-day statement to reconcile. An interim report gives a running view of balances and entries during the day.",
+                    createdBy: "The account servicer — Sweety's bank.",
+                    receivedBy: "The account owner or their treasury / ERP system.",
+                    flow: ['Account Servicer (Bank)', 'Interim Report', 'Account Owner / Treasury'],
+                    businessComponents: [
+                        { name: 'Report', plain: 'A snapshot of activity so far today' },
+                        { name: 'Balance', plain: 'Running balance at the moment of the report' },
+                        { name: 'Entries', plain: 'Individual movements booked since the last report' }
+                    ],
+                    messageComponents: [
+                        { tag: 'Rpt', plain: "Report — the container for this account's intraday view" },
+                        { tag: 'Bal', plain: 'Balance figures' },
+                        { tag: 'Ntry', plain: 'Each booked entry, with NtryRef' }
+                    ],
+                    breaks: [
+                        { symptom: 'Duplicate entries across two interim reports', cause: 'Pulling overlapping time windows without de-duplicating', fix: 'Reconcile on NtryRef, not on amount + time' }
+                    ],
+                    interview: [
+                        { q: "What's the difference between camt.052, camt.053 and camt.054?", a: '052 is the intraday / interim report, 053 is the end-of-day statement (the legal record), and 054 is a real-time debit/credit notification of a single movement.' }
+                    ],
+                    related: ['CAMT.053', 'CAMT.054']
+                }
             },
             {
                 code: 'CAMT.053',
@@ -25,7 +49,35 @@ const DATA = {
                 category: 'Cash Management',
                 useCases: ['Monthly Statements', 'Account Reconciliation', 'Balance Verification', 'Audit Reports'],
                 fields: ['Stmt (Statement)', 'Bal (Balance)', 'OpeningBalance', 'ClosingBalance'],
-                example: '<Document>\n  <BkToCstmrStmt>\n    <Stmt>\n      <AcctStmt>\n        <Acct><IBAN>DE89370400440532013000</IBAN></Acct>\n        <OpeningBalance>10000.00</OpeningBalance>\n        <ClosingBalance>10000.00</ClosingBalance>\n      </AcctStmt>\n    </Stmt>\n  </BkToCstmrStmt>\n</Document>'
+                example: '<Document>\n  <BkToCstmrStmt>\n    <Stmt>\n      <AcctStmt>\n        <Acct><IBAN>DE89370400440532013000</IBAN></Acct>\n        <OpeningBalance>10000.00</OpeningBalance>\n        <ClosingBalance>10000.00</ClosingBalance>\n      </AcctStmt>\n    </Stmt>\n  </BkToCstmrStmt>\n</Document>',
+                node: {
+                    story: "At the end of the day, Sweety's bank closes the books and sends the official statement: opening balance, every transaction, closing balance. This is the record auditors trust.",
+                    whyExists: 'Reconciliation and audit need one authoritative end-of-day record per account — structured, complete, machine-readable. camt.053 is the ISO 20022 replacement for the old MT940 (the legacy end-of-day statement).',
+                    createdBy: 'The account servicer (the bank), once per business day.',
+                    receivedBy: 'The account owner / corporate ERP, for automatic reconciliation.',
+                    flow: ['Bank closes books', 'camt.053 Statement', 'Corporate ERP reconciles'],
+                    businessComponents: [
+                        { name: 'Statement', plain: "The day's complete account record" },
+                        { name: 'Opening / Closing Balance', plain: 'Where the account started and ended' },
+                        { name: 'Entries', plain: 'Every booked transaction, with references' }
+                    ],
+                    messageComponents: [
+                        { tag: 'Stmt', plain: 'Statement container' },
+                        { tag: 'Bal (OPBD / CLBD)', plain: 'Opening and closing booked balances' },
+                        { tag: 'Ntry', plain: 'Booked entries with NtryRef and AcctSvcrRef' }
+                    ],
+                    validation: [
+                        { tag: '<Bal>', rule: 'Opening + sum(entries) must equal closing balance', fails: "A closing balance that doesn't foot — usually a missing or duplicated entry" }
+                    ],
+                    breaks: [
+                        { symptom: "ERP won't auto-reconcile", cause: 'Entries lack structured references (EndToEndId / AcctSvcrRef), forcing manual matching', fix: 'Ensure each entry carries its original payment references end to end' }
+                    ],
+                    interview: [
+                        { q: 'Which MT message did camt.053 replace, and why is the MX version better?', a: 'It replaces the MT940 statement. The MX version carries structured balances and references, so reconciliation can be fully automated instead of parsing free text.' },
+                        { q: 'camt.053 vs camt.052?', a: '053 is the definitive end-of-day statement; 052 is an interim, intraday view that is not the legal record.' }
+                    ],
+                    related: ['CAMT.052', 'CAMT.054', 'PACS.008']
+                }
             },
             {
                 code: 'CAMT.054',
@@ -37,7 +89,35 @@ const DATA = {
                 category: 'Cash Management',
                 useCases: ['Salary Credits', 'Refunds', 'Settlements', 'Interest Payments'],
                 fields: ['Amt (Amount)', 'CdtDbtInd (Credit/Debit)', 'BkgDt (Booking Date)', 'NtryRef'],
-                example: '<Document>\n  <BkToCstmrDebitCreditNotifctn>\n    <Notfctn>\n      <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id></Acct>\n      <Ntry>\n        <Amt>1000.00</Amt>\n        <CdtDbtInd>CRDT</CdtDbtInd>\n        <BkgDt>2024-06-18</BkgDt>\n      </Ntry>\n    </Notfctn>\n  </BkToCstmrDebitCreditNotifctn>\n</Document>'
+                example: '<Document>\n  <BkToCstmrDebitCreditNotifctn>\n    <Notfctn>\n      <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id></Acct>\n      <Ntry>\n        <Amt>1000.00</Amt>\n        <CdtDbtInd>CRDT</CdtDbtInd>\n        <BkgDt>2024-06-18</BkgDt>\n      </Ntry>\n    </Notfctn>\n  </BkToCstmrDebitCreditNotifctn>\n</Document>',
+                node: {
+                    story: "The instant Bob's $400 hits Sweety's account, her bank fires a notification: credit, 400, here's the reference. She doesn't wait for the statement to know the money arrived.",
+                    whyExists: 'Real-time reconciliation. A single credit or debit needs to be announced the moment it books, so the receiver can release goods, mark an invoice paid, or update cash position immediately.',
+                    createdBy: "The account servicer (creditor's bank), at the moment of booking.",
+                    receivedBy: 'The account owner — the beneficiary or their treasury system.',
+                    flow: ['Funds book at Creditor Agent', 'camt.054 Notification', 'Beneficiary updates ledger'],
+                    businessComponents: [
+                        { name: 'Notification', plain: 'A heads-up about one movement, not a full statement' },
+                        { name: 'Amount', plain: 'How much moved' },
+                        { name: 'Credit / Debit Indicator', plain: 'Money in or money out' }
+                    ],
+                    messageComponents: [
+                        { tag: 'Ntfctn', plain: 'Notification container' },
+                        { tag: 'Amt', plain: 'Amount booked' },
+                        { tag: 'CdtDbtInd', plain: 'CRDT = credit, DBIT = debit' },
+                        { tag: 'BkgDt', plain: 'Booking date' }
+                    ],
+                    validation: [
+                        { tag: '<CdtDbtInd>', rule: 'Must be CRDT or DBIT', fails: 'Free text or a wrong indicator breaks downstream reconciliation logic' }
+                    ],
+                    breaks: [
+                        { symptom: 'Beneficiary credits the wrong invoice', cause: "Remittance reference not carried through, so the notification can't be tied to the open item", fix: 'Preserve EndToEndId / structured remittance from the originating payment' }
+                    ],
+                    interview: [
+                        { q: 'When would you use camt.054 instead of camt.053?', a: 'camt.054 notifies a single debit/credit in near real time; camt.053 is the batched end-of-day statement. Use 054 when you need to react to one movement immediately.' }
+                    ],
+                    related: ['CAMT.053', 'PACS.008']
+                }
             },
             {
                 code: 'CAMT.060',
@@ -49,7 +129,29 @@ const DATA = {
                 category: 'Cash Management',
                 useCases: ['Account Inquiry', 'Balance Request', 'Transaction History Query'],
                 fields: ['ReqId (Request ID)', 'AcctId (Account ID)', 'QueryType', 'DateRange'],
-                example: '<Document>\n  <AcctMgmtInfoRequest>\n    <ReqId>REQ001</ReqId>\n    <AcctId>DE89370400440532013000</AcctId>\n  </AcctMgmtInfoRequest>\n</Document>'
+                example: '<Document>\n  <AcctMgmtInfoRequest>\n    <ReqId>REQ001</ReqId>\n    <AcctId>DE89370400440532013000</AcctId>\n  </AcctMgmtInfoRequest>\n</Document>',
+                node: {
+                    story: "Sweety's treasury system needs yesterday's detail again — so it asks the bank for it, instead of waiting for the next scheduled file.",
+                    whyExists: 'Account owners sometimes need to pull a report or statement on demand. camt.060 is the request that triggers the bank to send a camt.052 / 053 / 054.',
+                    createdBy: 'The account owner (customer / treasury).',
+                    receivedBy: 'The account servicer (the bank).',
+                    flow: ['Account Owner', 'camt.060 Request', 'Bank responds with camt.05x'],
+                    businessComponents: [
+                        { name: 'Request', plain: 'The ask: which report, which account, which window' },
+                        { name: 'Account', plain: 'Which account it concerns' }
+                    ],
+                    messageComponents: [
+                        { tag: 'ReqId', plain: 'Reference for this request' },
+                        { tag: 'AcctId', plain: 'The account being queried' }
+                    ],
+                    breaks: [
+                        { symptom: 'Bank returns nothing', cause: "Requested date range is outside retention, or the account id doesn't match servicer records", fix: 'Validate the account id and stay within the supported reporting window' }
+                    ],
+                    interview: [
+                        { q: 'What does camt.060 trigger?', a: 'It requests an account report / statement; the bank answers with a camt.052, camt.053 or camt.054.' }
+                    ],
+                    related: ['CAMT.053', 'CAMT.052']
+                }
             }
         ],
         'PACS': [
@@ -63,7 +165,34 @@ const DATA = {
                 category: 'Payments & Settlement',
                 useCases: ['Payment Confirmation', 'Rejection Notification', 'Status Updates'],
                 fields: ['PmtSts (Payment Status)', 'PmtId (Payment ID)', 'StsRsnInf'],
-                example: '<Document>\n  <FIPaymentStatusReport>\n    <PmtSts>ACCC</PmtSts>\n    <PmtId>PMT001</PmtId>\n  </FIPaymentStatusReport>\n</Document>'
+                example: '<Document>\n  <FIPaymentStatusReport>\n    <PmtSts>ACCC</PmtSts>\n    <PmtId>PMT001</PmtId>\n  </FIPaymentStatusReport>\n</Document>',
+                node: {
+                    story: "Bob's bank sent the transfer onward. Did the next bank accept it? pacs.002 is the answer coming back: accepted, rejected, or pending — with a reason code if it failed.",
+                    whyExists: 'Interbank payments need a confirmation channel. Without a status report, the sending bank never knows if the instruction was accepted or why it bounced.',
+                    createdBy: 'The instructed / receiving financial institution.',
+                    receivedBy: 'The instructing financial institution that sent the original payment.',
+                    flow: ['Receiving FI evaluates payment', 'pacs.002 Status Report', 'Sending FI updates status'],
+                    businessComponents: [
+                        { name: 'Payment Status', plain: 'Accepted, rejected, or pending' },
+                        { name: 'Status Reason', plain: 'The code explaining a rejection' },
+                        { name: 'Original Reference', plain: 'Which payment this status is about' }
+                    ],
+                    messageComponents: [
+                        { tag: 'TxSts', plain: 'Transaction status — e.g. ACCC, ACSP, RJCT, PDNG' },
+                        { tag: 'StsRsnInf', plain: 'Reason information when rejected' },
+                        { tag: 'OrgnlEndToEndId', plain: 'Link back to the original payment' }
+                    ],
+                    validation: [
+                        { tag: '<TxSts>', rule: 'Must be a valid ISO status code (ACCC, ACSP, RJCT, PDNG…)', fails: "Custom status strings downstream systems can't interpret" }
+                    ],
+                    breaks: [
+                        { symptom: "Sender can't match the status to a payment", cause: 'OrgnlEndToEndId / OrgnlTxId not echoed back correctly', fix: 'Always return the original identifiers unchanged' }
+                    ],
+                    interview: [
+                        { q: 'What do status codes ACCC, ACSP and RJCT mean?', a: 'ACCC = accepted and settlement completed, ACSP = accepted, settlement in process, RJCT = rejected. RJCT is always paired with a reason code.' }
+                    ],
+                    related: ['PACS.008', 'PAIN.002', 'PACS.004']
+                }
             },
             {
                 code: 'PACS.004',
@@ -75,7 +204,31 @@ const DATA = {
                 category: 'Payments & Settlement',
                 useCases: ['Payment Rejection', 'Failed Transfers', 'Return Processing'],
                 fields: ['OrgnlPmtId (Original Payment ID)', 'RtrRsn (Return Reason)', 'ReturnAmt'],
-                example: '<Document>\n  <PaymentReturn>\n    <OrgnlPmtId>PMT001</OrgnlPmtId>\n    <RtrRsn>NOOR</RtrRsn>\n  </PaymentReturn>\n</Document>'
+                example: '<Document>\n  <PaymentReturn>\n    <OrgnlPmtId>PMT001</OrgnlPmtId>\n    <RtrRsn>NOOR</RtrRsn>\n  </PaymentReturn>\n</Document>',
+                node: {
+                    story: "The account was closed. The receiving bank can't deliver Bob's money — so it sends it back, with a reason, using pacs.004.",
+                    whyExists: "When a settled payment can't be applied, the funds must be returned cleanly and traceably to the originator, not just dropped.",
+                    createdBy: "The receiving bank that can't apply the funds.",
+                    receivedBy: 'The original sending bank.',
+                    flow: ['Receiving bank cannot apply funds', 'pacs.004 Return', 'Original sender re-credits debtor'],
+                    businessComponents: [
+                        { name: 'Return Reason', plain: 'Why the money is coming back (account closed, etc.)' },
+                        { name: 'Returned Amount', plain: 'How much is returned (may net charges)' },
+                        { name: 'Original Reference', plain: 'The payment being reversed' }
+                    ],
+                    messageComponents: [
+                        { tag: 'RtrId', plain: 'Identifier for this return' },
+                        { tag: 'RtrRsnInf', plain: 'Return reason code, e.g. AC04 account closed' },
+                        { tag: 'OrgnlUETR', plain: 'Ties the return to the original tracked payment' }
+                    ],
+                    breaks: [
+                        { symptom: "Return can't be auto-matched", cause: 'Original UETR / EndToEndId not preserved on the return', fix: 'Carry the original identifiers so the sender can reverse the right transaction' }
+                    ],
+                    interview: [
+                        { q: "pacs.004 (return) vs camt.056 (recall) — what's the difference?", a: "pacs.004 returns funds that were settled but can't be applied; camt.056 requests cancellation / recall of a payment and may not result in returned funds." }
+                    ],
+                    related: ['PACS.008', 'PACS.002']
+                }
             },
             {
                 code: 'PACS.008',
@@ -87,7 +240,39 @@ const DATA = {
                 category: 'Payments & Settlement',
                 useCases: ['Cross-bank Transfers', 'International Payments', 'Settlement Processing'],
                 fields: ['PmtId (Payment ID)', 'Amt (Amount)', 'Cdtr (Creditor)', 'Dbtr (Debtor)'],
-                example: '<Document>\n  <FIToFICstmrCdtTrf>\n    <CdtTrfTxInf>\n      <PmtId>PMT001</PmtId>\n      <Amt>1000.00</Amt>\n      <Cdtr><Nm>Creditor Bank</Nm></Cdtr>\n    </CdtTrfTxInf>\n  </FIToFICstmrCdtTrf>\n</Document>'
+                example: '<Document>\n  <FIToFICstmrCdtTrf>\n    <CdtTrfTxInf>\n      <PmtId>PMT001</PmtId>\n      <Amt>1000.00</Amt>\n      <Cdtr><Nm>Creditor Bank</Nm></Cdtr>\n    </CdtTrfTxInf>\n  </FIToFICstmrCdtTrf>\n</Document>',
+                node: {
+                    story: "This is the message that actually moves Bob's $400 between banks. Bob's bank (the debtor agent) hands it to Sweety's bank (the creditor agent), possibly through an intermediary — each hop preserving who pays whom.",
+                    whyExists: "It's the interbank workhorse for customer payments — the MX replacement for MT103. It carries the debtor, creditor, agents, amount and the references that let a payment be tracked end to end across the world.",
+                    createdBy: "The debtor agent (sender's bank), after receiving the customer's pain.001.",
+                    receivedBy: "The creditor agent (beneficiary's bank), directly or via intermediary agents.",
+                    flow: ['Debtor Agent', 'Intermediary Agent', 'Creditor Agent', 'Beneficiary credited'],
+                    businessComponents: [
+                        { name: 'Debtor / Creditor', plain: 'Who pays and who is paid' },
+                        { name: 'Debtor Agent / Creditor Agent', plain: 'The sending and receiving banks' },
+                        { name: 'Interbank Settlement Amount', plain: 'What settles between the banks' }
+                    ],
+                    messageComponents: [
+                        { tag: 'PmtId / UETR', plain: 'Payment identifiers, including the global tracking reference' },
+                        { tag: 'IntrBkSttlmAmt', plain: 'Interbank settlement amount' },
+                        { tag: 'Dbtr / Cdtr', plain: 'Debtor and creditor parties' },
+                        { tag: 'DbtrAgt / CdtrAgt', plain: 'Debtor and creditor banks, identified by their BIC (Bank Identifier Code)' }
+                    ],
+                    validation: [
+                        { tag: '<UETR>', rule: 'RFC 4122 UUIDv4, lowercase hex, version bit 4 and variant 8/9/a/b', fails: 'Uppercase letters or wrong version / variant bits → rejected' },
+                        { tag: '<EndToEndId>', rule: '≤35 chars, must survive every hop unchanged', fails: "Placeholder values like 'NOT PROVIDED' or 'NO REF'" },
+                        { tag: '<CreDtTm>', rule: 'ISO-8601 date-time with UTC offset', fails: 'Omitting the timezone offset' }
+                    ],
+                    breaks: [
+                        { symptom: 'Payment NAKed at a domestic network', cause: 'Missing the required RTGS codeword (e.g. TARGET2) for that leg', fix: "Apply the network's HVPS+ market-practice rules before routing" },
+                        { symptom: 'Sanctions-screening false hit', cause: 'Name and address crammed unstructured when a BIC is already given', fix: "Use structured address; don't duplicate identification in free text" }
+                    ],
+                    interview: [
+                        { q: "What's the difference between MsgId, EndToEndId and UETR?", a: 'MsgId is point-to-point (rotates each hop). EndToEndId is the customer reference, unchanged end to end. UETR is the globally unique UUIDv4 that tracks the whole payment across every bank.' },
+                        { q: 'Which MT message does pacs.008 replace?', a: 'MT103, the single customer credit transfer. pacs.008 is its ISO 20022 equivalent on FINplus / CBPR+.' }
+                    ],
+                    related: ['PAIN.001', 'PACS.002', 'PACS.009', 'CAMT.054']
+                }
             },
             {
                 code: 'PACS.009',
@@ -99,7 +284,35 @@ const DATA = {
                 category: 'Payments & Settlement',
                 useCases: ['Batch Settlement', 'Clearing House Reports', 'Daily Settlement'],
                 fields: ['SettlmtInfId (Settlement ID)', 'SettlmtDt (Settlement Date)', 'SttlmAmt'],
-                example: '<Document>\n  <SettlementTransaction>\n    <SettlmtInfId>SETTL001</SettlmtInfId>\n    <SettlmtDt>2024-06-18</SettlmtDt>\n    <SttlmAmt>50000.00</SttlmAmt>\n  </SettlementTransaction>\n</Document>'
+                example: '<Document>\n  <SettlementTransaction>\n    <SettlmtInfId>SETTL001</SettlmtInfId>\n    <SettlmtDt>2024-06-18</SettlmtDt>\n    <SttlmAmt>50000.00</SttlmAmt>\n  </SettlementTransaction>\n</Document>',
+                node: {
+                    story: 'Banks also move their own money — to settle positions or manage liquidity. pacs.009 is the financial-institution credit transfer, including the COV variant that settles the cover leg behind a customer payment.',
+                    whyExists: 'Wholesale funds movement between institutions: treasury, liquidity, and the cover payment that funds a pacs.008 routed serially through correspondents.',
+                    createdBy: 'The ordering financial institution (or its correspondent).',
+                    receivedBy: 'The beneficiary financial institution / its agent.',
+                    flow: ['Ordering FI', 'Intermediary / Correspondent', 'Beneficiary FI'],
+                    businessComponents: [
+                        { name: 'Institution Debtor / Creditor', plain: 'The banks themselves, not customers' },
+                        { name: 'Settlement Amount', plain: 'The funds moving between institutions' },
+                        { name: 'Underlying Customer Payment (COV)', plain: 'In the cover variant, the customer payment being funded' }
+                    ],
+                    messageComponents: [
+                        { tag: 'InstgAgt / InstdAgt', plain: 'Instructing and instructed agents' },
+                        { tag: 'IntrBkSttlmAmt', plain: 'Interbank settlement amount' },
+                        { tag: 'UndrlygCstmrCdtTrf', plain: 'COV only — the underlying pacs.008 details' }
+                    ],
+                    validation: [
+                        { tag: '<SttlmMtd>', rule: 'Valid settlement method (INDA, INGA, CLRG, COVE)', fails: 'Wrong or missing settlement method for the routing scenario' }
+                    ],
+                    breaks: [
+                        { symptom: "Cover and customer legs don't reconcile", cause: 'UETR not shared between the pacs.008 and its pacs.009 COV', fix: 'Carry the same UETR on both legs so the cover can be matched' }
+                    ],
+                    interview: [
+                        { q: 'pacs.008 vs pacs.009?', a: "pacs.008 moves a customer's funds between banks; pacs.009 moves a bank's own funds. The pacs.009 COV variant funds the cover leg behind a serial pacs.008." },
+                        { q: 'What is a cover payment?', a: 'When banks have no direct relationship, the customer message (pacs.008) routes one way while a separate pacs.009 COV settles the actual funds through correspondents.' }
+                    ],
+                    related: ['PACS.008', 'PACS.002']
+                }
             }
         ],
         'PAIN': [
@@ -113,7 +326,36 @@ const DATA = {
                 category: 'Customer Initiation',
                 useCases: ['Bill Payments', 'Salary Payouts', 'Invoice Settlements'],
                 fields: ['PmtId (Payment ID)', 'Debtor', 'Creditor', 'InstrAmt'],
-                example: '<Document>\n  <CstmrCdtTrfInitn>\n    <PmtInf>\n      <PmtId>PMT001</PmtId>\n      <CdtTrfTxInf>\n        <Amt>500.00</Amt>\n      </CdtTrfTxInf>\n    </PmtInf>\n  </CstmrCdtTrfInitn>\n</Document>'
+                example: '<Document>\n  <CstmrCdtTrfInitn>\n    <PmtInf>\n      <PmtId>PMT001</PmtId>\n      <CdtTrfTxInf>\n        <Amt>500.00</Amt>\n      </CdtTrfTxInf>\n    </PmtInf>\n  </CstmrCdtTrfInitn>\n</Document>',
+                node: {
+                    story: "It all begins here. Bob tells his bank 'pay Sweety $400.' That instruction — from a customer to their own bank — is pain.001. No money has moved yet; this is the request.",
+                    whyExists: 'Corporates and individuals need one structured way to instruct their bank to make payments — single or batched — replacing the old MT101 (the legacy SWIFT request format) and a zoo of proprietary bank formats.',
+                    createdBy: 'The debtor (Bob) or their ERP / accounting system.',
+                    receivedBy: "The debtor's bank (debtor agent).",
+                    flow: ['Debtor / ERP', 'pain.001 Initiation', 'Debtor Agent validates & executes'],
+                    businessComponents: [
+                        { name: 'Group Header', plain: 'Metadata for the whole file — id, timestamp, control sum' },
+                        { name: 'Payment Information', plain: 'Shared instructions: execution date, debtor account, charge bearer' },
+                        { name: 'Credit Transfer Transaction', plain: 'One block per individual payment' }
+                    ],
+                    messageComponents: [
+                        { tag: 'GrpHdr', plain: 'Level 1 — message id, creation time, number of txns, control sum' },
+                        { tag: 'PmtInf', plain: 'Level 2 — shared payment parameters' },
+                        { tag: 'CdtTrfTxInf', plain: 'Level 3 — per-transaction detail incl. EndToEndId, amount, creditor' }
+                    ],
+                    validation: [
+                        { tag: '<CtrlSum>', rule: 'Must equal the sum of all transaction amounts', fails: "A control sum that doesn't match → the whole file is rejected" },
+                        { tag: '<ReqdExctnDt>', rule: 'Valid, well-formed execution date', fails: 'Past dates or a bad date format' }
+                    ],
+                    breaks: [
+                        { symptom: 'Entire batch rejected', cause: "GrpHdr control sum or number-of-transactions doesn't match the actual transactions", fix: 'Compute GrpHdr totals from the transaction list — never hand-enter them' }
+                    ],
+                    interview: [
+                        { q: 'Walk me through the three levels of a pain.001.', a: 'Level 1 Group Header (file-wide metadata), Level 2 Payment Information (shared params like debtor account and execution date), Level 3 Credit Transfer Transaction Information (per-payment detail).' },
+                        { q: 'pain.001 vs pacs.008?', a: 'pain.001 is customer-to-bank (the request). pacs.008 is bank-to-bank (the execution). The bank turns the pain.001 it receives into a pacs.008 it sends.' }
+                    ],
+                    related: ['PACS.008', 'PAIN.002', 'CAMT.054']
+                }
             },
             {
                 code: 'PAIN.002',
@@ -125,7 +367,31 @@ const DATA = {
                 category: 'Customer Initiation',
                 useCases: ['Payment Confirmation', 'Transaction Status', 'Error Notification'],
                 fields: ['PmtId (Payment ID)', 'PmtSts (Payment Status)', 'StsRsnInf'],
-                example: '<Document>\n  <CstmrPaymentStatusReport>\n    <PmtId>PMT001</PmtId>\n    <PmtSts>ACCC</PmtSts>\n  </CstmrPaymentStatusReport>\n</Document>'
+                example: '<Document>\n  <CstmrPaymentStatusReport>\n    <PmtId>PMT001</PmtId>\n    <PmtSts>ACCC</PmtSts>\n  </CstmrPaymentStatusReport>\n</Document>',
+                node: {
+                    story: "Bob's bank received his pain.001. Was it accepted? pain.002 is the bank telling Bob: accepted, rejected, or pending — and if rejected, exactly which transaction and why.",
+                    whyExists: 'Initiators need confirmation that their instruction was understood and accepted, with a precise reason when something fails — before assuming the money is on its way.',
+                    createdBy: "The debtor's bank (debtor agent).",
+                    receivedBy: 'The debtor / originating system that sent the pain.001.',
+                    flow: ['Debtor Agent evaluates pain.001', 'pain.002 Status Report', 'Debtor / ERP updates status'],
+                    businessComponents: [
+                        { name: 'Group Status', plain: 'Status of the whole file' },
+                        { name: 'Transaction Status', plain: 'Status of each individual payment' },
+                        { name: 'Status Reason', plain: 'Why a payment was rejected' }
+                    ],
+                    messageComponents: [
+                        { tag: 'GrpSts', plain: 'Status for the whole original message' },
+                        { tag: 'TxInfAndSts', plain: 'Per-transaction status' },
+                        { tag: 'StsRsnInf', plain: 'Reason code for rejections' }
+                    ],
+                    breaks: [
+                        { symptom: "Bob can't tell which payment failed", cause: 'OrgnlEndToEndId not echoed per transaction', fix: 'Return original references at the transaction level, not just the group level' }
+                    ],
+                    interview: [
+                        { q: 'pain.002 vs pacs.002?', a: 'pain.002 is bank-to-customer status (about a pain.001). pacs.002 is bank-to-bank status (about a pacs.008). Same idea, different leg of the journey.' }
+                    ],
+                    related: ['PAIN.001', 'PACS.002']
+                }
             },
             {
                 code: 'PAIN.008',
@@ -137,7 +403,31 @@ const DATA = {
                 category: 'Customer Initiation',
                 useCases: ['Recurring Payments', 'Subscription Collection', 'Loan Repayments'],
                 fields: ['PmtId (Payment ID)', 'Creditor', 'Debtor', 'MndtId (Mandate ID)'],
-                example: '<Document>\n  <CstmrDrctDebitInitn>\n    <PmtInf>\n      <MndtId>MNDT001</MndtId>\n      <Debtor>Customer Name</Debtor>\n    </PmtInf>\n  </CstmrDrctDebitInitn>\n</Document>'
+                example: '<Document>\n  <CstmrDrctDebitInitn>\n    <PmtInf>\n      <MndtId>MNDT001</MndtId>\n      <Debtor>Customer Name</Debtor>\n    </PmtInf>\n  </CstmrDrctDebitInitn>\n</Document>',
+                node: {
+                    story: "Instead of Bob pushing money, a company pulls it — Sweety's gym collects her monthly fee. pain.008 is the creditor instructing its bank to collect from the debtor, backed by a mandate the debtor signed.",
+                    whyExists: 'Recurring collections (subscriptions, utilities, loans) need a standard, mandate-controlled way for a creditor to debit a payer account.',
+                    createdBy: 'The creditor (the company collecting) or its system.',
+                    receivedBy: "The creditor's bank, which then collects via the debtor's bank.",
+                    flow: ['Creditor', 'pain.008 Direct Debit Initiation', 'Creditor Agent', 'Debtor Agent debits payer'],
+                    businessComponents: [
+                        { name: 'Mandate', plain: "The debtor's signed authorization to be debited" },
+                        { name: 'Creditor / Debtor', plain: 'Who collects and who pays' },
+                        { name: 'Collection Amount', plain: 'How much is pulled' }
+                    ],
+                    messageComponents: [
+                        { tag: 'MndtId', plain: 'Mandate identifier — proof of authorization' },
+                        { tag: 'DrctDbtTxInf', plain: 'Direct debit transaction detail' },
+                        { tag: 'CdtrSchmeId', plain: 'Creditor scheme identifier' }
+                    ],
+                    breaks: [
+                        { symptom: 'Collection rejected as unauthorized', cause: 'Missing or expired MndtId / mandate details', fix: 'Reference a valid, current mandate for every collection' }
+                    ],
+                    interview: [
+                        { q: 'What makes a direct debit (pain.008) different from a credit transfer (pain.001)?', a: "Direction of the pull: pain.001 pushes money out at the debtor's instruction; pain.008 pulls money in at the creditor's instruction, and it requires a mandate." }
+                    ],
+                    related: ['PAIN.001', 'PACS.008']
+                }
             }
         ],
         'Others': [
@@ -151,7 +441,31 @@ const DATA = {
                 category: 'Securities',
                 useCases: ['Corporate Actions', 'Dividend Notifications', 'Stock Splits'],
                 fields: ['EventId (Event ID)', 'EventType', 'EffectiveDate', 'SecurityId'],
-                example: '<Document>\n  <SecuritiesEventNotification>\n    <EventId>EVT001</EventId>\n    <EventType>DIVD</EventType>\n    <SecurityId>US0378331005</SecurityId>\n  </SecuritiesEventNotification>\n</Document>'
+                example: '<Document>\n  <SecuritiesEventNotification>\n    <EventId>EVT001</EventId>\n    <EventType>DIVD</EventType>\n    <SecurityId>US0378331005</SecurityId>\n  </SecuritiesEventNotification>\n</Document>',
+                node: {
+                    story: 'Sweety invested some savings. The company declares a dividend — and every holder must be told the same thing, the same way. seev.001 announces that corporate event to participants.',
+                    whyExists: 'Corporate-action terms used to live in free-text MT564 (the legacy corporate-action notice) narrative, so every custodian read them differently. Structured seev messages let entitlements be calculated automatically.',
+                    createdBy: "The issuer's agent / CSD.",
+                    receivedBy: 'Custodians, investment managers, and ultimately holders.',
+                    flow: ['Issuer / CSD', 'seev.001 Event Notification', 'Custodian', 'Investment Manager'],
+                    businessComponents: [
+                        { name: 'Event', plain: "What's happening — dividend, split, merger" },
+                        { name: 'Security', plain: 'Which instrument is affected (ISIN)' },
+                        { name: 'Effective Date', plain: 'When it takes effect' }
+                    ],
+                    messageComponents: [
+                        { tag: 'EvtId', plain: 'Event identifier' },
+                        { tag: 'EvtTp', plain: 'Event type, e.g. DIVD' },
+                        { tag: 'FinInstrmId / ISIN', plain: 'The security' }
+                    ],
+                    breaks: [
+                        { symptom: 'Holders compute different entitlements', cause: 'Key terms left in unstructured narrative (the old MT564 problem)', fix: 'Carry rates and dates as structured fields, not free text' }
+                    ],
+                    interview: [
+                        { q: 'Why did structured seev messages replace MT564 free text?', a: 'Free-text narrative forced manual interpretation across custodians, causing mismatched entitlements and operational risk. Structured data enables straight-through, automated processing.' }
+                    ],
+                    related: ['CAMT.053']
+                }
             },
             {
                 code: 'ACMT.002',
@@ -163,7 +477,31 @@ const DATA = {
                 category: 'Account Management',
                 useCases: ['New Account Setup', 'Account Configuration', 'Customer Onboarding'],
                 fields: ['AcctOpenngInstrId (ID)', 'AcctOwnr (Owner)', 'AcctType'],
-                example: '<Document>\n  <AcctOpnngInstr>\n    <AcctOpenngInstrId>ACCTOPEN001</AcctOpenngInstrId>\n    <AcctOwnr>John Doe</AcctOwnr>\n  </AcctOpnngInstr>\n</Document>'
+                example: '<Document>\n  <AcctOpnngInstr>\n    <AcctOpenngInstrId>ACCTOPEN001</AcctOpenngInstrId>\n    <AcctOwnr>John Doe</AcctOwnr>\n  </AcctOpnngInstr>\n</Document>',
+                node: {
+                    story: 'Before any of this works, Sweety needs an account. acmt.002 carries the instruction to open and configure one — owner, type, and settings.',
+                    whyExists: 'Account management itself needs to be standardized so onboarding and configuration can flow between parties without bespoke forms.',
+                    createdBy: 'The customer / account owner (or an agent acting for them).',
+                    receivedBy: 'The bank that will open and service the account.',
+                    flow: ['Customer', 'acmt.002 Account Opening Instruction', 'Bank configures account'],
+                    businessComponents: [
+                        { name: 'Account Owner', plain: 'Whose account it is' },
+                        { name: 'Account Type', plain: 'What kind of account' },
+                        { name: 'Instruction', plain: 'The open / configure request' }
+                    ],
+                    messageComponents: [
+                        { tag: 'AcctOpngInstrId', plain: 'Identifier for the opening instruction' },
+                        { tag: 'AcctOwnr', plain: 'The owner party' },
+                        { tag: 'Acct', plain: 'Account configuration details' }
+                    ],
+                    breaks: [
+                        { symptom: 'Onboarding stalls', cause: 'Owner identification incomplete for KYC (Know Your Customer checks)', fix: 'Provide full structured party identification up front' }
+                    ],
+                    interview: [
+                        { q: 'Which domain do acmt messages belong to?', a: 'Account Management — they standardize opening, maintaining and reporting on accounts, separate from the payment flows themselves.' }
+                    ],
+                    related: ['CAMT.053']
+                }
             }
         ]
     },
@@ -347,6 +685,12 @@ const DATA = {
         { term: 'Debtor', definition: 'Party making/initiating payment - also called payer or originator.' },
         { term: 'Liquidity', definition: 'Availability of funds for settlement activities.' },
         { term: 'CBPR+', definition: 'Cross Border Payments and Reporting Plus - standard for international payments.' },
+        { term: 'HVPS+', definition: 'High Value Payments Systems Plus - market-practice guidelines aligning high-value payment systems.' },
+        { term: 'UETR', definition: 'Unique End-to-end Transaction Reference - a globally unique UUIDv4 (lowercase) that tracks one payment across every bank.' },
+        { term: 'Cover Payment', definition: 'A separate interbank transfer (pacs.009 COV) that settles the funds behind a customer payment routed through correspondents.' },
+        { term: 'Business Application Header', definition: 'head.001 - the envelope wrapping each document, carrying sender, receiver, message type and version.' },
+        { term: 'Data Dictionary', definition: 'The static store of ISO 20022 business meanings, elements and components shared across all messages.' },
+        { term: 'Structured Address', definition: 'Postal address split into labelled fields (street, town, country) rather than free-text lines - mandated by SWIFT from Nov 2026.' },
         { term: 'MT Format', definition: 'SWIFT Message Type (legacy) - old text-based format being replaced by ISO 20022.' }
     ]
 };
