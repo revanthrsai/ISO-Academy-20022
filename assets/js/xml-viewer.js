@@ -581,6 +581,14 @@ const XmlViewer = (function () {
         });
     }
 
+    // Workspace handoff (Session 4.6) — read/write the current message so the
+    // five Playground tools share one message instead of five separate pastes.
+    function getXml() { const ta = document.getElementById('xv-src'); return ta ? ta.value : ''; }
+    function loadXml(xml) {
+        const ta = document.getElementById('xv-src');
+        if (ta) { ta.value = xml || ''; onInput(); }
+    }
+
     // -------------------------------------------------------------------------
     // STYLES — injected once, theme-aware (reads the global CSS variables).
     // -------------------------------------------------------------------------
@@ -743,6 +751,31 @@ const XmlViewer = (function () {
             font-size: var(--fs-body); line-height: 1.7;
         }
         .pg-tool-intro strong { color: var(--text); font-weight: 600; }
+
+        /* Workspace handoff bar (Session 4.6) — carries one message between tools */
+        .pg-flow {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            margin: 0 0 22px; padding: 11px 16px;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--glass-tint);
+        }
+        .pg-flow-lbl {
+            font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--text-faint); white-space: nowrap;
+        }
+        .pg-flow-lbl::after { content: " \\2192"; color: var(--primary); }
+        .pg-flow-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pg-flow-btn {
+            font-family: var(--font-display); font-weight: 600; font-size: 13px;
+            padding: 6px 14px; border-radius: var(--radius-xs);
+            border: 1px solid var(--border-hi); background: transparent;
+            color: var(--text-muted); cursor: pointer;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        background var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out);
+        }
+        .pg-flow-btn:hover { border-color: var(--primary-deep); background: var(--glass-tint-strong); color: var(--text); }
+        .pg-flow-btn.is-flash { border-color: var(--primary-deep); background: var(--glass-tint-strong); color: var(--text); }
         `;
         const style = document.createElement('style');
         style.id = 'xv-styles';
@@ -761,7 +794,7 @@ const XmlViewer = (function () {
         render();
     }
 
-    return { init, load, onInput, clear, setPlain, toggle, expandAll };
+    return { init, load, onInput, clear, setPlain, toggle, expandAll, getXml, loadXml };
 })();
 
 window.XmlViewer = XmlViewer;

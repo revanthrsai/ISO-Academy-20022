@@ -669,31 +669,136 @@ const DATA = {
             messageCodes: []
         }
     },
+    // GLOSSARY (Phase 5)
+    // Schema (locked Session 5.1): every term carries
+    //   term        — the display headword
+    //   slug         — stable, lowercase-hyphenated id (filter/search + #/glossary/<slug>)
+    //   category     — exactly one of the five GLOSSARY_CATEGORIES slugs
+    //   definition   — one plain-English sentence or two
+    //   related      — array of OTHER glossary slugs ("See also"); 5.2 extends these
+    //                  and adds cross-links out to Library/Playground.
+    // 5.1 seeds a handful per category so category-filtering + search can be built
+    // and verified; 5.2 populates the full set.
     glossary: [
-        { term: 'IBAN', definition: 'International Bank Account Number - unique identifier for bank accounts worldwide.' },
-        { term: 'BIC/SWIFT Code', definition: 'Bank Identifier Code - identifies banks for international transactions.' },
-        { term: 'CRDT/DBIT', definition: 'Credit = money in, Debit = money out. Direction depends on perspective.' },
-        { term: 'Settlement', definition: 'Final transfer of funds between accounts after clearing. When money actually moves.' },
-        { term: 'Clearing', definition: 'Process of validating, routing, and reconciling payments between banks.' },
-        { term: 'Counterparty', definition: 'The other party in a transaction - sender or receiver depending on perspective.' },
-        { term: 'Reconciliation', definition: 'Matching payment messages with actual transactions to ensure accuracy.' },
-        { term: 'Batch', definition: 'Multiple transactions grouped in one message for efficiency.' },
-        { term: 'Mandate', definition: 'Authorization for recurring debit collections from an account.' },
-        { term: 'XML Schema', definition: 'Defines structure and rules for ISO 20022 messages.' },
-        { term: 'Instruction', definition: 'Request to move money, sent before actual settlement occurs.' },
-        { term: 'Creditor', definition: 'Party receiving payment - also called beneficiary or payee.' },
-        { term: 'Debtor', definition: 'Party making/initiating payment - also called payer or originator.' },
-        { term: 'Liquidity', definition: 'Availability of funds for settlement activities.' },
-        { term: 'CBPR+', definition: 'Cross Border Payments and Reporting Plus - standard for international payments.' },
-        { term: 'HVPS+', definition: 'High Value Payments Systems Plus - market-practice guidelines aligning high-value payment systems.' },
-        { term: 'UETR', definition: 'Unique End-to-end Transaction Reference - a globally unique UUIDv4 (lowercase) that tracks one payment across every bank.' },
-        { term: 'Cover Payment', definition: 'A separate interbank transfer (pacs.009 COV) that settles the funds behind a customer payment routed through correspondents.' },
-        { term: 'Business Application Header', definition: 'head.001 - the envelope wrapping each document, carrying sender, receiver, message type and version.' },
-        { term: 'Data Dictionary', definition: 'The static store of ISO 20022 business meanings, elements and components shared across all messages.' },
-        { term: 'Structured Address', definition: 'Postal address split into labelled fields (street, town, country) rather than free-text lines - mandated by SWIFT from Nov 2026.' },
-        { term: 'MT Format', definition: 'SWIFT Message Type (legacy) - old text-based format being replaced by ISO 20022.' }
+        // -- Business Terms --
+        { term: 'Settlement', slug: 'settlement', category: 'business-terms', definition: 'The final, irrevocable transfer of funds between accounts after clearing — the moment the money actually moves.', related: ['clearing', 'liquidity', 'value-date', 'rtgs'] },
+        { term: 'Clearing', slug: 'clearing', category: 'business-terms', definition: 'Validating, routing, and reconciling a payment between banks before it settles — agreeing who owes whom, and how much.', related: ['settlement', 'reconciliation', 'csm'] },
+        { term: 'Counterparty', slug: 'counterparty', category: 'business-terms', definition: 'The other party in a transaction — sender or receiver, depending on whose books you are reading.', related: ['creditor', 'debtor'] },
+        { term: 'Reconciliation', slug: 'reconciliation', category: 'business-terms', definition: 'Matching incoming payment messages against the transactions actually booked, so both sides agree the money arrived as described.', related: ['clearing', 'remittance-information', 'camt'] },
+        { term: 'Liquidity', slug: 'liquidity', category: 'business-terms', definition: 'Having funds available, in the right account, at the moment settlement is due.', related: ['settlement', 'nostro-vostro', 'treasury'] },
+        { term: 'Creditor', slug: 'creditor', category: 'business-terms', definition: 'The party receiving the payment — also called the beneficiary or payee.', related: ['debtor', 'counterparty', 'beneficiary'] },
+        { term: 'Debtor', slug: 'debtor', category: 'business-terms', definition: 'The party making the payment — also called the payer or originator.', related: ['creditor', 'counterparty', 'originator'] },
+        { term: 'Cover Payment', slug: 'cover-payment', category: 'business-terms', definition: 'A separate interbank transfer (pacs.009 COV) that moves the real funds behind a customer payment routed through correspondent banks.', related: ['settlement', 'correspondent-banking'] },
+        { term: 'Correspondent Banking', slug: 'correspondent-banking', category: 'business-terms', definition: 'The arrangement where one bank holds an account with another to move money in a currency or country it cannot reach directly — the backbone of cross-border payments.', related: ['nostro-vostro', 'cover-payment', 'bic-swift-code'] },
+        { term: 'Nostro & Vostro', slug: 'nostro-vostro', category: 'business-terms', definition: '"Our account with you" (nostro) and "your account with us" (vostro) — two views of the same correspondent account that must always reconcile.', related: ['correspondent-banking', 'liquidity', 'treasury'] },
+        { term: 'Credit Transfer', slug: 'credit-transfer', category: 'business-terms', definition: 'A push payment: the payer instructs their bank to send money to the payee. The pain.001 / pacs.008 family carries it.', related: ['direct-debit', 'pacs', 'pain'] },
+        { term: 'Direct Debit', slug: 'direct-debit', category: 'business-terms', definition: 'A pull payment: the payee collects funds from the payer under a stored mandate. The pain.008 message carries it.', related: ['credit-transfer', 'mandate', 'pain'] },
+        { term: 'Beneficiary', slug: 'beneficiary', category: 'business-terms', definition: 'The end party a payment is meant for — the same role ISO 20022 labels the Creditor (Cdtr).', related: ['creditor', 'originator'] },
+        { term: 'Originator', slug: 'originator', category: 'business-terms', definition: 'The party who starts a payment — the same role ISO 20022 labels the Debtor (Dbtr).', related: ['debtor', 'beneficiary', 'endtoendid'] },
+        { term: 'Value Date', slug: 'value-date', category: 'business-terms', definition: 'The date on which funds are actually available to the receiver — as distinct from the date the instruction was sent.', related: ['settlement', 'intrbksttlmdt'] },
+        { term: 'Real-Time Payments', slug: 'real-time-payments', category: 'business-terms', definition: 'Payments that clear and settle in seconds, around the clock — versus batch systems that settle in cycles. ISO 20022 is their native message format.', related: ['payment-rail', 'settlement', 'iso-20022'] },
+        { term: 'Payment Rail', slug: 'payment-rail', category: 'business-terms', definition: 'The underlying scheme or infrastructure a payment travels on — an RTGS system, an ACH, or an instant-payment network.', related: ['real-time-payments', 'rtgs', 'ach'] },
+        { term: 'Treasury', slug: 'treasury', category: 'business-terms', definition: 'The function inside a bank or company that manages its own cash and liquidity — moving a firm’s own money rather than a customer’s.', related: ['liquidity', 'nostro-vostro', 'camt'] },
+
+        // -- ISO 20022 Terms --
+        { term: 'ISO 20022', slug: 'iso-20022', category: 'iso-20022-terms', definition: 'The open, global standard for financial messaging — a shared business dictionary plus an XML grammar that every modern payment message is built from.', related: ['mx', 'data-dictionary', 'migration'] },
+        { term: 'MX', slug: 'mx', category: 'iso-20022-terms', definition: 'The shorthand for ISO 20022 messages (pain, pacs, camt…), as opposed to the legacy "MT" SWIFT messages they replace.', related: ['mt-format', 'iso-20022', 'coexistence'] },
+        { term: 'MT Format', slug: 'mt-format', category: 'iso-20022-terms', definition: 'SWIFT Message Type — the older, fixed text format (e.g. MT103) being replaced by ISO 20022 / MX messages.', related: ['mx', 'swift', 'coexistence'] },
+        { term: 'Data Dictionary', slug: 'data-dictionary', category: 'iso-20022-terms', definition: 'The shared store of ISO 20022 business meanings, elements, and components reused across every message type.', related: ['iso-20022', 'namespace', 'business-component'] },
+        { term: 'Structured Address', slug: 'structured-address', category: 'iso-20022-terms', definition: 'A postal address split into labelled fields (street, town, country) instead of free-text lines — mandated by SWIFT from November 2026.', related: ['iso-20022', 'migration'] },
+        { term: 'Business Application Header', slug: 'business-application-header', category: 'iso-20022-terms', definition: 'head.001 — the envelope wrapped around each message, carrying sender, receiver, message type, and version.', related: ['iso-20022', 'message-identifier'] },
+        { term: 'pain', slug: 'pain', category: 'iso-20022-terms', definition: 'Payments Initiation — the message family a customer uses to instruct its bank (pain.001 credit transfer, pain.008 direct debit, pain.002 status).', related: ['pacs', 'camt', 'credit-transfer'] },
+        { term: 'pacs', slug: 'pacs', category: 'iso-20022-terms', definition: 'Payments Clearing & Settlement — the bank-to-bank family that actually moves money (pacs.008 credit transfer, pacs.002 status, pacs.004 return).', related: ['pain', 'camt', 'settlement'] },
+        { term: 'camt', slug: 'camt', category: 'iso-20022-terms', definition: 'Cash Management — the reporting family: statements (camt.053), intraday reports (camt.052), notifications (camt.054), and cancellations (camt.056).', related: ['pain', 'pacs', 'reconciliation'] },
+        { term: 'Message Definition', slug: 'message-definition', category: 'iso-20022-terms', definition: 'The formal specification of one message type — which business components it uses and how they are arranged — registered under ISO 20022.', related: ['message-component', 'business-component', 'message-identifier'] },
+        { term: 'Message Identifier', slug: 'message-identifier', category: 'iso-20022-terms', definition: 'The dotted name that pins down a message’s exact type and version, e.g. pacs.008.001.08 — family.number.variant.version.', related: ['namespace', 'message-definition', 'business-application-header'] },
+        { term: 'Business Component', slug: 'business-component', category: 'iso-20022-terms', definition: 'A reusable, business-level building block in the ISO 20022 dictionary (e.g. Party, Account, Amount) shared across many messages.', related: ['data-dictionary', 'message-component', 'message-definition'] },
+        { term: 'Message Component', slug: 'message-component', category: 'iso-20022-terms', definition: 'The concrete XML realisation of a business component inside a specific message — the elements you actually see in the file.', related: ['business-component', 'element', 'message-definition'] },
+        { term: 'Market Practice', slug: 'market-practice', category: 'iso-20022-terms', definition: 'Agreed usage guidelines (CBPR+, HVPS+) that narrow the broad ISO 20022 standard down to exactly how a given community must fill each field.', related: ['cbpr-plus', 'hvps-plus', 'coexistence'] },
+        { term: 'Coexistence', slug: 'coexistence', category: 'iso-20022-terms', definition: 'The transition window in which legacy MT and ISO 20022 MX messages both run, so a payment can be translated between them without loss.', related: ['migration', 'mt-format', 'mx'] },
+        { term: 'ISO 20022 Migration', slug: 'migration', category: 'iso-20022-terms', definition: 'The industry-wide move from MT to ISO 20022, phased by scheme with hard cut-over dates (SWIFT cross-border by November 2025).', related: ['coexistence', 'iso-20022', 'structured-address'] },
+
+        // -- Message Elements --
+        { term: 'EndToEndId', slug: 'endtoendid', category: 'message-elements', definition: 'A reference the originator assigns to a payment and that every bank passes along unchanged, so the two ends can recognise the same transaction.', related: ['uetr', 'instrid', 'originator'] },
+        { term: 'IntrBkSttlmAmt', slug: 'intrbksttlmamt', category: 'message-elements', definition: 'Interbank Settlement Amount — the exact amount and currency that settles between the banks for a given transaction.', related: ['settlement', 'iso-4217', 'intrbksttlmdt'] },
+        { term: 'ChrgBr', slug: 'chrgbr', category: 'message-elements', definition: 'Charge Bearer — who pays the fees: the debtor (DEBT), the creditor (CRED), or a shared split (SHAR / SLEV).', related: ['cover-payment', 'purp'] },
+        { term: 'Remittance Information', slug: 'remittance-information', category: 'message-elements', definition: 'The "what this payment is for" field (RmtInf) — an invoice number or free-text note the creditor uses to reconcile the money.', related: ['reconciliation', 'purp'] },
+        { term: 'InstrId', slug: 'instrid', category: 'message-elements', definition: 'Instruction Id — a reference meaningful only between two adjacent parties in the chain, unlike the end-to-end EndToEndId.', related: ['endtoendid', 'msgid'] },
+        { term: 'CRDT/DBIT', slug: 'crdt-dbit', category: 'message-elements', definition: 'The credit/debit indicator: CRDT means money in, DBIT means money out — direction depends on whose account you are reading.', related: ['creditor', 'debtor'] },
+        { term: 'Mandate', slug: 'mandate', category: 'message-elements', definition: 'A stored authorisation that lets a creditor collect recurring direct-debit payments from a debtor’s account.', related: ['debtor', 'direct-debit'] },
+        { term: 'GrpHdr', slug: 'grphdr', category: 'message-elements', definition: 'Group Header — the once-per-message block carrying the MsgId, creation time, and totals that apply to every transaction inside.', related: ['msgid', 'nboftxs', 'ctrlsum'] },
+        { term: 'PmtInf', slug: 'pmtinf', category: 'message-elements', definition: 'Payment Information — the pain.001 block grouping one debtor’s payments that share a debit account and execution date.', related: ['cdttrftxinf', 'batch', 'pain'] },
+        { term: 'CdtTrfTxInf', slug: 'cdttrftxinf', category: 'message-elements', definition: 'Credit Transfer Transaction Information — one individual payment inside a message: its amount, creditor, and references.', related: ['pmtinf', 'endtoendid', 'nboftxs'] },
+        { term: 'DbtrAgt', slug: 'dbtr-agt', category: 'message-elements', definition: 'Debtor Agent — the bank of the party sending the money, identified by its BIC.', related: ['cdtr-agt', 'debtor', 'bic-swift-code'] },
+        { term: 'CdtrAgt', slug: 'cdtr-agt', category: 'message-elements', definition: 'Creditor Agent — the bank of the party receiving the money, identified by its BIC.', related: ['dbtr-agt', 'creditor', 'bic-swift-code'] },
+        { term: 'MsgId', slug: 'msgid', category: 'message-elements', definition: 'Message Id — a sender-assigned reference identifying the whole message (not one transaction inside it).', related: ['grphdr', 'instrid'] },
+        { term: 'NbOfTxs', slug: 'nboftxs', category: 'message-elements', definition: 'Number of Transactions — the declared count of individual payments in the message; a validator checks it against the real number found.', related: ['ctrlsum', 'cdttrftxinf', 'schema-validation'] },
+        { term: 'CtrlSum', slug: 'ctrlsum', category: 'message-elements', definition: 'Control Sum — the total of all transaction amounts, declared once so the receiver can prove nothing was dropped or altered.', related: ['nboftxs', 'grphdr'] },
+        { term: 'TxSts', slug: 'txsts', category: 'message-elements', definition: 'Transaction Status — the code in a status report (pacs.002 / pain.002) saying whether a payment was accepted (ACSP/ACSC) or rejected (RJCT).', related: ['reason-code', 'pacs'] },
+        { term: 'Reason Code', slug: 'reason-code', category: 'message-elements', definition: 'A standard code (e.g. AC01 wrong account, RR04 regulatory) that explains why a payment was rejected, returned, or recalled.', related: ['txsts', 'chrgbr'] },
+        { term: 'IntrBkSttlmDt', slug: 'intrbksttlmdt', category: 'message-elements', definition: 'Interbank Settlement Date — the date the banks settle the transaction, formatted as an ISO 8601 date.', related: ['value-date', 'intrbksttlmamt', 'iso-8601'] },
+        { term: 'SvcLvl', slug: 'svclvl', category: 'message-elements', definition: 'Service Level — the scheme or agreement a payment runs under (e.g. SEPA), telling every bank which rulebook applies.', related: ['sepa', 'purp'] },
+        { term: 'Purp', slug: 'purp', category: 'message-elements', definition: 'Purpose — a coded reason for the payment (salary, tax, supplier) that downstream systems can act on without reading free text.', related: ['remittance-information', 'reason-code'] },
+
+        // -- Technical Terms --
+        { term: 'XML Schema', slug: 'xml-schema', category: 'technical-terms', definition: 'The XSD rulebook that defines which elements a message may contain, in what order, and of what type — what makes a message "valid".', related: ['namespace', 'xsd', 'schema-validation'] },
+        { term: 'Namespace', slug: 'namespace', category: 'technical-terms', definition: 'The identifier (e.g. urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08) that names a message’s exact type and version.', related: ['xml-schema', 'mx', 'message-identifier'] },
+        { term: 'Batch', slug: 'batch', category: 'technical-terms', definition: 'Many individual transactions grouped inside one message for efficiency — e.g. a single payroll pain.001 carrying every employee.', related: ['instruction', 'pmtinf'] },
+        { term: 'Instruction', slug: 'instruction', category: 'technical-terms', definition: 'A request to move money, sent and recorded before the funds actually settle.', related: ['settlement', 'credit-transfer'] },
+        { term: 'Check Digits', slug: 'check-digits', category: 'technical-terms', definition: 'Two digits inside an IBAN, computed by an ISO 7064 mod-97 sum, that let a system catch a typo before sending money to the wrong account.', related: ['iban', 'mod-97'] },
+        { term: 'Well-Formed XML', slug: 'well-formed', category: 'technical-terms', definition: 'XML whose tags are correctly opened, closed, and nested — the minimum a parser needs before schema validity can even be checked.', related: ['parser', 'element', 'schema-validation'] },
+        { term: 'Element', slug: 'element', category: 'technical-terms', definition: 'A single tagged node in an XML message, e.g. <IntrBkSttlmAmt> — the unit a schema constrains and a validator reports against.', related: ['attribute', 'message-component', 'well-formed'] },
+        { term: 'Attribute', slug: 'attribute', category: 'technical-terms', definition: 'A name=value pair on an element, e.g. Ccy="EUR" on an amount — used in ISO 20022 mainly for currency and a few qualifiers.', related: ['element', 'iso-4217'] },
+        { term: 'Schema Validation', slug: 'schema-validation', category: 'technical-terms', definition: 'Checking a message against its XSD and market-practice rules — required elements present, codes legal, lengths and formats correct.', related: ['xml-schema', 'well-formed', 'market-practice'] },
+        { term: 'Parser', slug: 'parser', category: 'technical-terms', definition: 'The software that reads XML text into a tree of elements; a parser error means the message isn’t even well-formed yet.', related: ['well-formed', 'element'] },
+        { term: 'Mod-97 Checksum', slug: 'mod-97', category: 'technical-terms', definition: 'The ISO 7064 division-by-97 test behind IBAN check digits: a valid IBAN, rearranged and read as one big number, leaves remainder 1.', related: ['check-digits', 'iban'] },
+        { term: 'Character Set', slug: 'character-set', category: 'technical-terms', definition: 'The restricted set of characters SWIFT allows in a message (the "x" charset) — reject anything outside it to avoid corrupting a name or reference downstream.', related: ['utf-8', 'schema-validation'] },
+        { term: 'ISO 4217', slug: 'iso-4217', category: 'technical-terms', definition: 'The standard list of three-letter currency codes (EUR, USD, JPY) — and how many decimal places each currency’s minor unit allows.', related: ['iso-3166', 'intrbksttlmamt'] },
+        { term: 'ISO 3166', slug: 'iso-3166', category: 'technical-terms', definition: 'The standard two-letter country codes (GB, DE, US) used in addresses, IBANs, and BICs.', related: ['iso-4217', 'iban', 'structured-address'] },
+        { term: 'ISO 8601', slug: 'iso-8601', category: 'technical-terms', definition: 'The date/time format ISO 20022 uses everywhere — YYYY-MM-DD for dates, with an offset for timestamps — so ordering is unambiguous worldwide.', related: ['intrbksttlmdt'] },
+        { term: 'UTF-8', slug: 'utf-8', category: 'technical-terms', definition: 'The character encoding ISO 20022 messages are written in, letting one file carry every language’s scripts unambiguously.', related: ['character-set', 'well-formed'] },
+
+        // -- Acronyms --
+        { term: 'IBAN', slug: 'iban', category: 'acronyms', definition: 'International Bank Account Number — a single string identifying both the bank and the account, with built-in check digits.', related: ['check-digits', 'bic-swift-code', 'mod-97'] },
+        { term: 'BIC/SWIFT Code', slug: 'bic-swift-code', category: 'acronyms', definition: 'Bank Identifier Code — 8 or 11 characters that uniquely identify a bank (and branch) for international routing.', related: ['iban', 'swift', 'lei'] },
+        { term: 'UETR', slug: 'uetr', category: 'acronyms', definition: 'Unique End-to-end Transaction Reference — a globally unique UUIDv4 (lowercase) that tracks one payment across every bank in the chain.', related: ['endtoendid', 'uuid'] },
+        { term: 'CBPR+', slug: 'cbpr-plus', category: 'acronyms', definition: 'Cross-Border Payments and Reporting Plus — the market-practice guidelines for using ISO 20022 on cross-border SWIFT payments.', related: ['hvps-plus', 'market-practice', 'swift'] },
+        { term: 'HVPS+', slug: 'hvps-plus', category: 'acronyms', definition: 'High-Value Payment Systems Plus — market-practice guidelines aligning how high-value market infrastructures use ISO 20022.', related: ['cbpr-plus', 'market-practice', 'rtgs'] },
+        { term: 'SWIFT', slug: 'swift', category: 'acronyms', definition: 'Society for Worldwide Interbank Financial Telecommunication — the co-operative that runs the global messaging network and stewards the MT and CBPR+ standards.', related: ['bic-swift-code', 'mt-format', 'cbpr-plus'] },
+        { term: 'STP', slug: 'stp', category: 'acronyms', definition: 'Straight-Through Processing — a payment that flows end to end with no manual intervention, the payoff of clean, structured ISO 20022 data.', related: ['schema-validation', 'structured-address'] },
+        { term: 'RTGS', slug: 'rtgs', category: 'acronyms', definition: 'Real-Time Gross Settlement — a system that settles high-value payments one by one, in real time, with finality (e.g. TARGET2, Fedwire).', related: ['settlement', 'payment-rail', 'hvps-plus'] },
+        { term: 'ACH', slug: 'ach', category: 'acronyms', definition: 'Automated Clearing House — a system that clears and settles low-value payments in batches on a cycle, rather than one at a time.', related: ['payment-rail', 'batch', 'csm'] },
+        { term: 'CSM', slug: 'csm', category: 'acronyms', definition: 'Clearing & Settlement Mechanism — the shared infrastructure (an ACH or RTGS) that stands between banks to clear and settle their payments.', related: ['clearing', 'ach', 'rtgs'] },
+        { term: 'FI', slug: 'fi', category: 'acronyms', definition: 'Financial Institution — any bank or regulated payment provider that can send and receive interbank messages.', related: ['psp', 'bic-swift-code'] },
+        { term: 'PSP', slug: 'psp', category: 'acronyms', definition: 'Payment Service Provider — a bank or non-bank firm authorised to move money on a customer’s behalf.', related: ['fi', 'lei'] },
+        { term: 'LEI', slug: 'lei', category: 'acronyms', definition: 'Legal Entity Identifier — a 20-character global code identifying a legal party in a transaction, increasingly carried alongside the BIC.', related: ['bic-swift-code', 'fi'] },
+        { term: 'MI', slug: 'mi', category: 'acronyms', definition: 'Market Infrastructure — a system that whole markets depend on to clear or settle, such as an RTGS or a securities depository.', related: ['rtgs', 'csm', 'hvps-plus'] },
+        { term: 'XSD', slug: 'xsd', category: 'acronyms', definition: 'XML Schema Definition — the machine-readable rulebook file a message is validated against.', related: ['xml-schema', 'schema-validation'] },
+        { term: 'UUID', slug: 'uuid', category: 'acronyms', definition: 'Universally Unique Identifier — a 128-bit value with a near-zero collision chance; the UETR is a lowercase version-4 UUID.', related: ['uetr'] },
+        { term: 'SEPA', slug: 'sepa', category: 'acronyms', definition: 'Single Euro Payments Area — the scheme that standardises euro credit transfers and direct debits across Europe on ISO 20022.', related: ['svclvl', 'credit-transfer', 'direct-debit'] }
     ]
 };
+
+// The five Glossary categories (NAVIGATION.md section 3). Order here is the order
+// the filter chips render in. Every glossary term's category is one of these slugs.
+const GLOSSARY_CATEGORIES = [
+    { slug: 'business-terms',   label: 'Business Terms' },
+    { slug: 'iso-20022-terms',  label: 'ISO 20022 Terms' },
+    { slug: 'message-elements', label: 'Message Elements' },
+    { slug: 'technical-terms',  label: 'Technical Terms' },
+    { slug: 'acronyms',         label: 'Acronyms' }
+];
+
+// slug -> category label (for the badge on each card).
+function glossaryCategoryLabel(slug) {
+    const c = GLOSSARY_CATEGORIES.find(c => c.slug === slug);
+    return c ? c.label : slug;
+}
+
+// Look up a single term by its slug (used by "See also" related chips).
+function getGlossaryTerm(slug) {
+    return (DATA.glossary || []).find(t => t.slug === slug) || null;
+}
 
 // Helper function to get message count by family
 function getMessageCountByFamily(family) {

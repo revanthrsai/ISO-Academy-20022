@@ -855,38 +855,137 @@ function loadLessonModule(moduleId) {
     if (window.Motion) Motion.scan(content);
 }
 
-// Render glossary
-function renderGlossary(items = DATA.glossary) {
+// ── GLOSSARY (Phase 5) ──────────────────────────────────────────────────
+// Category filter + free-text search share one state object; either one
+// narrows the same list. State lives here so the chips, the search box and
+// the URL stay in sync.
+const glossaryState = { category: 'all', q: '' };
+
+function gEsc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Terms passing BOTH the active category AND the search query.
+function glossaryMatches() {
+    const q = glossaryState.q.trim().toLowerCase();
+    return (DATA.glossary || []).filter(item => {
+        if (glossaryState.category !== 'all' && item.category !== glossaryState.category) return false;
+        if (!q) return true;
+        const hay = (item.term + ' ' + item.definition + ' ' + glossaryCategoryLabel(item.category)).toLowerCase();
+        return hay.includes(q);
+    });
+}
+
+// Category filter bar: All + one chip per category. Each count reflects how
+// many terms match the current SEARCH within that category, so the chips stay
+// honest as you type.
+function renderGlossaryFilterBar() {
+    const bar = document.getElementById('glossary-filter');
+    if (!bar) return;
+    const q = glossaryState.q.trim().toLowerCase();
+    const inSearch = (item) => !q || (item.term + ' ' + item.definition + ' ' + glossaryCategoryLabel(item.category)).toLowerCase().includes(q);
+    const all = (DATA.glossary || []).filter(inSearch);
+    const chip = (slug, label, count) =>
+        '<button type="button" class="filter-chip' + (glossaryState.category === slug ? ' active' : '') + '" ' +
+        'aria-pressed="' + (glossaryState.category === slug) + '" onclick="setGlossaryCategory(\'' + slug + '\')">' +
+        gEsc(label) + '<span class="filter-chip-count">' + count + '</span></button>';
+    let html = chip('all', 'All', all.length);
+    GLOSSARY_CATEGORIES.forEach(c => {
+        html += chip(c.slug, c.label, all.filter(i => i.category === c.slug).length);
+    });
+    bar.innerHTML = html;
+}
+
+// Render glossary (reads glossaryState; no args — call after changing state).
+function renderGlossary() {
     const glossaryGrid = document.getElementById('glossary-grid') || document.querySelector('.glossary-grid');
-    const countEl = document.getElementById('glossary-count');
-
     if (!glossaryGrid) return;
+    renderGlossaryFilterBar();
 
+    const items = glossaryMatches();
+    const countEl = document.getElementById('glossary-count');
     if (countEl) {
-        countEl.textContent = `${items.length} of ${DATA.glossary.length} terms`;
+        const total = (DATA.glossary || []).length;
+        const scope = glossaryState.category === 'all' ? '' : ' in ' + glossaryCategoryLabel(glossaryState.category);
+        countEl.textContent = items.length + ' of ' + total + ' terms' + scope;
     }
 
     if (items.length === 0) {
-        glossaryGrid.innerHTML = '<div class="glossary-empty">No terms match your search.</div>';
+        glossaryGrid.innerHTML = '<div class="glossary-empty">No terms match' +
+            (glossaryState.q.trim() ? ' \u201c' + gEsc(glossaryState.q.trim()) + '\u201d' : ' this filter') + '.</div>';
     } else {
-        glossaryGrid.innerHTML = items.map((item, i) => `
-            <div class="glossary-card" data-reveal="up" data-reveal-delay="${Math.min(i, 8) * 55}" data-tilt>
-                <div class="glossary-term">${item.term}</div>
-                <div class="glossary-definition">${item.definition}</div>
-            </div>
-        `).join('');
+        const labelStyle = 'font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)';
+        glossaryGrid.innerHTML = items.map((item, i) => {
+            const related = (item.related || [])
+                .map(getGlossaryTerm).filter(Boolean)
+                .map(r => '<button type="button" class="tag" style="cursor:pointer" onclick="gotoGlossaryTerm(\'' + r.slug + '\')">' + gEsc(r.term) + '</button>')
+                .join('');
+            return '' +
+            '<div class="glossary-card" data-reveal="up" data-reveal-delay="' + (Math.min(i, 8) * 55) + '" data-tilt>' +
+                '<button type="button" class="tag" style="cursor:pointer;margin-bottom:14px" onclick="setGlossaryCategory(\'' + item.category + '\')">' + gEsc(glossaryCategoryLabel(item.category)) + '</button>' +
+                '<div class="glossary-term">' + gEsc(item.term) + '</div>' +
+                '<div class="glossary-definition">' + gEsc(item.definition) + '</div>' +
+                (related ? '<div style="margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px"><span style="' + labelStyle + '">See also</span>' + related + '</div>' : '') +
+            '</div>';
+        }).join('');
     }
 
     if (window.Motion) Motion.scan(glossaryGrid);
 }
 
+// Pick a category (or 'all'); reflects to the URL for shareability.
+function setGlossaryCategory(slug) {
+    glossaryState.category = slug || 'all';
+    syncGlossaryHash();
+    renderGlossary();
+}
+
+// Search-box handler — keeps its (query) signature so existing callers work.
 function filterGlossary(query) {
-    const q = query.trim().toLowerCase();
-    const filtered = DATA.glossary.filter(item =>
-        item.term.toLowerCase().includes(q) ||
-        item.definition.toLowerCase().includes(q)
-    );
-    renderGlossary(filtered);
+    glossaryState.q = query || '';
+    syncGlossaryHash();
+    renderGlossary();
+}
+
+// Jump to one term (from a "See also" chip): clear the category, search it.
+function gotoGlossaryTerm(slug) {
+    const t = getGlossaryTerm(slug);
+    if (!t) return;
+    glossaryState.category = 'all';
+    glossaryState.q = t.term;
+    const box = document.getElementById('glossary-search');
+    if (box) box.value = t.term;
+    syncGlossaryHash();
+    renderGlossary();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+// Reflect filter + search into #/glossary?category=&q= so a filtered view is
+// shareable / reload-safe (NAVIGATION.md §2). Write-only (replaceState, no
+// reload); routeOnLoad / applyGlossaryHash read it back.
+function syncGlossaryHash() {
+    if (typeof location === 'undefined' || typeof history === 'undefined') return;
+    const params = [];
+    if (glossaryState.category && glossaryState.category !== 'all') params.push('category=' + encodeURIComponent(glossaryState.category));
+    if (glossaryState.q.trim()) params.push('q=' + encodeURIComponent(glossaryState.q.trim()));
+    const target = '#/glossary' + (params.length ? '?' + params.join('&') : '');
+    if (location.hash !== target) history.replaceState(null, '', target);
+}
+
+// Seed glossaryState from the URL (called on glossary navigate / first paint).
+function applyGlossaryHash() {
+    const m = (location.hash || '').match(/^#\/glossary(?:\?(.*))?$/);
+    glossaryState.category = 'all';
+    glossaryState.q = '';
+    if (m && m[1]) {
+        const sp = new URLSearchParams(m[1]);
+        const cat = sp.get('category');
+        if (cat && GLOSSARY_CATEGORIES.some(c => c.slug === cat)) glossaryState.category = cat;
+        glossaryState.q = sp.get('q') || '';
+    }
+    const box = document.getElementById('glossary-search');
+    if (box) box.value = glossaryState.q;
 }
 
 // Theme management

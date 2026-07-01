@@ -220,9 +220,20 @@ const PAGES = {
                 </button>
                 <button class="pg-tool-tab" role="tab" data-tool="transformer" onclick="setPlaygroundTool('transformer', event)">
                     <span class="pg-tool-tab-name">Transformer</span>
-                    <span class="pg-tool-tab-sub">MT103 &rarr; pacs.008</span>
+                    <span class="pg-tool-tab-sub">MT103 &harr; pacs.008</span>
                 </button>
-                <span class="pg-tool-soon">Validator &middot; Comparator &middot; Samples &mdash; coming next</span>
+                <button class="pg-tool-tab" role="tab" data-tool="validator" onclick="setPlaygroundTool('validator', event)">
+                    <span class="pg-tool-tab-name">Validator</span>
+                    <span class="pg-tool-tab-sub">Check a message</span>
+                </button>
+                <button class="pg-tool-tab" role="tab" data-tool="comparator" onclick="setPlaygroundTool('comparator', event)">
+                    <span class="pg-tool-tab-name">Comparator</span>
+                    <span class="pg-tool-tab-sub">Diff two messages</span>
+                </button>
+                <button class="pg-tool-tab" role="tab" data-tool="samples" onclick="setPlaygroundTool('samples', event)">
+                    <span class="pg-tool-tab-name">Sample Library</span>
+                    <span class="pg-tool-tab-sub">Load a real message</span>
+                </button>
             </div>
 
             <!-- TOOL · XML Viewer (Session 4.1) -->
@@ -231,23 +242,84 @@ const PAGES = {
                     Paste an ISO&nbsp;20022 message &mdash; or load a sample from any 300-level family below &mdash; and read it as a
                     collapsible tree. Flip <strong>Plain English</strong> to rename every cryptic tag to what it actually means.
                 </p>
+                <div class="pg-flow" role="group" aria-label="Send this message to another tool">
+                    <span class="pg-flow-lbl">Continue with this message</span>
+                    <div class="pg-flow-btns">
+                        <button class="pg-flow-btn" onclick="sendMessageTo('transformer', event)">Transform</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('validator', event)">Validate</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('comparator', event)">Compare</button>
+                    </div>
+                </div>
                 <div class="xv" id="xv-root"></div>
             </section>
 
-            <!-- TOOL · Transformer (pre-existing live MT103 → pacs.008) -->
+            <!-- TOOL · Message Transformer (Session 4.2) — bidirectional MT103 ⇄ pacs.008 -->
             <section class="pg-tool-panel" id="pg-tool-transformer" hidden>
                 <p class="pg-tool-intro">
-                    The same payment, two languages. Edit the old SWIFT <strong>MT103</strong> on the left and the
-                    <strong>ISO&nbsp;20022 pacs.008</strong> rebuilds live on the right &mdash; field by field, meaning preserved.
-                    Flip it to plain English, hover a field to see where it lands, and watch the validator catch exactly
-                    what breaks.
+                    The same payment, two languages. Edit <strong>either</strong> side and the other rebuilds
+                    <strong>live</strong> &mdash; the legacy SWIFT <strong>MT103</strong> and the
+                    <strong>ISO&nbsp;20022 pacs.008</strong> stay locked to one shared meaning. Flip the direction to convert
+                    each way, hover a field to see where it lands, and toggle plain English to read the ISO side without the tags.
                 </p>
-                <div class="pg-lab" id="pg-lab"></div>
-                <div class="pg-soon">
-                    <span class="pg-soon-badge">Coming next</span>
-                    <p>This is Bob&rsquo;s real $400 transfer, converted live. Next up: serial vs. cover-payment routing across
-                    multiple banks, and broken-payload &ldquo;schema repair&rdquo; challenges.</p>
+                <div class="pg-flow" role="group" aria-label="Send this message to another tool">
+                    <span class="pg-flow-lbl">Continue with this pacs.008</span>
+                    <div class="pg-flow-btns">
+                        <button class="pg-flow-btn" onclick="sendMessageTo('viewer', event)">View</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('validator', event)">Validate</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('comparator', event)">Compare</button>
+                    </div>
                 </div>
+                <div class="mxt" id="mxt-root"></div>
+            </section>
+
+            <!-- TOOL · Schema Validator (Session 4.3) — named failure modes, live -->
+            <section class="pg-tool-panel" id="pg-tool-validator" hidden>
+                <p class="pg-tool-intro">
+                    Paste a message &mdash; or load one of the broken samples below &mdash; and have it checked against the
+                    mistakes that actually bite: a <strong>malformed BIC</strong>, an <strong>IBAN</strong> that fails its
+                    checksum, an <strong>amount</strong> with the wrong decimals or currency, an <strong>overlong field</strong>,
+                    a <strong>missing required element</strong>, a <strong>count</strong> that doesn't add up. The report
+                    rebuilds <strong>live</strong> and names the rule, the element, and the value that broke it.
+                </p>
+                <div class="pg-flow" role="group" aria-label="Send this message to another tool">
+                    <span class="pg-flow-lbl">Continue with this message</span>
+                    <div class="pg-flow-btns">
+                        <button class="pg-flow-btn" onclick="sendMessageTo('viewer', event)">View</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('transformer', event)">Transform</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('comparator', event)">Compare</button>
+                    </div>
+                </div>
+                <div class="val" id="val-root"></div>
+            </section>
+            <!-- TOOL · Message Comparator (Session 4.4) — field-level diff of two messages -->
+            <section class="pg-tool-panel" id="pg-tool-comparator" hidden>
+                <p class="pg-tool-intro">
+                    Two messages, side by side &mdash; or load a before/after pair below. The diff is
+                    <strong>field-level</strong>, not line-by-line: both messages are parsed to their structural
+                    tree, so a re-ordered or re-formatted message shows <strong>zero</strong> false differences and
+                    every real change is named against its element &mdash; <strong>changed</strong>, <strong>added</strong>,
+                    or <strong>removed</strong>. Updates <strong>live</strong> as you edit either side.
+                </p>
+                <div class="pg-flow" role="group" aria-label="Send message A to another tool">
+                    <span class="pg-flow-lbl">Continue with message A</span>
+                    <div class="pg-flow-btns">
+                        <button class="pg-flow-btn" onclick="sendMessageTo('viewer', event)">View</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('transformer', event)">Transform</button>
+                        <button class="pg-flow-btn" onclick="sendMessageTo('validator', event)">Validate</button>
+                    </div>
+                </div>
+                <div class="cmp" id="cmp-root"></div>
+            </section>
+            <!-- TOOL · Sample Message Library (Session 4.5) — browse, then load into any tool -->
+            <section class="pg-tool-panel" id="pg-tool-samples" hidden>
+                <p class="pg-tool-intro">
+                    A shelf of real, valid ISO&nbsp;20022 messages &mdash; two to three per
+                    <strong>family</strong> &mdash; each a beat of the same Bob&nbsp;&rarr;&nbsp;Sweety transfer.
+                    Pick one and send it straight into the <strong>Viewer</strong>, <strong>Validator</strong>, or
+                    (for the pacs.008 it speaks) the <strong>Transformer</strong> &mdash; no pasting required.
+                </p>
+                <div class="smp" id="smp-root"></div>
+            </section>
             </section>
         </div>
     `,
@@ -262,6 +334,7 @@ const PAGES = {
                 <input type="text" class="search-box" id="glossary-search" placeholder="Search terms and definitions…" oninput="filterGlossary(this.value)">
                 <span class="glossary-count" id="glossary-count"></span>
             </div>
+            <div class="filter-bar" id="glossary-filter" data-reveal="up"></div>
             <div class="glossary-grid" id="glossary-grid"></div>
         </div>
     `
@@ -270,7 +343,7 @@ const PAGES = {
 // Ordered top-level sections, for the prev/next header arrows.
 const NAV_ORDER = ['history', 'library', 'playground', 'glossary'];
 
-// Which Playground tool is showing ('viewer' | 'transformer'). Phase 4 adds more.
+// Which Playground tool is showing ('viewer' | 'transformer' | 'validator'). Phase 4 adds more.
 let playgroundTool = 'viewer';
 
 // Switch between Playground tools without leaving the section. Each tool's
@@ -284,10 +357,45 @@ function setPlaygroundTool(tool, evt) {
     });
     const viewer = document.getElementById('pg-tool-viewer');
     const transformer = document.getElementById('pg-tool-transformer');
+    const validator = document.getElementById('pg-tool-validator');
+    const comparator = document.getElementById('pg-tool-comparator');
+    const samples = document.getElementById('pg-tool-samples');
     if (viewer) viewer.hidden = (tool !== 'viewer');
     if (transformer) transformer.hidden = (tool !== 'transformer');
+    if (validator) validator.hidden = (tool !== 'validator');
+    if (comparator) comparator.hidden = (tool !== 'comparator');
+    if (samples) samples.hidden = (tool !== 'samples');
     if (tool === 'viewer' && window.XmlViewer) XmlViewer.init('xv-root');
-    if (tool === 'transformer' && window.Playground) Playground.init();
+    if (tool === 'transformer' && window.MsgTransformer) MsgTransformer.init('mxt-root');
+    if (tool === 'validator' && window.SchemaValidator) SchemaValidator.init('val-root');
+    if (tool === 'comparator' && window.MsgComparator) MsgComparator.init('cmp-root');
+    if (tool === 'samples' && window.SampleLibrary) SampleLibrary.init('smp-root');
+}
+
+// Carry the current message from the active tool into another, so the five
+// Playground tools behave like one workspace, not five separate pastes
+// (Session 4.6). Read the source tool's current XML first, switch tools (which
+// re-initialises the destination), then load the message into it.
+const PG_GET = {
+    viewer:      () => (window.XmlViewer && XmlViewer.getXml()) || '',
+    transformer: () => (window.MsgTransformer && MsgTransformer.getXml()) || '',
+    validator:   () => (window.SchemaValidator && SchemaValidator.getXml()) || '',
+    comparator:  () => (window.MsgComparator && MsgComparator.getXml()) || ''
+};
+const PG_LOAD = {
+    viewer:      (xml) => window.XmlViewer && XmlViewer.loadXml(xml),
+    transformer: (xml) => window.MsgTransformer && MsgTransformer.loadXml(xml),
+    validator:   (xml) => window.SchemaValidator && SchemaValidator.loadXml(xml),
+    comparator:  (xml) => window.MsgComparator && MsgComparator.loadXml(xml)
+};
+function sendMessageTo(dest, evt) {
+    if (evt) evt.preventDefault();
+    const from = playgroundTool;
+    if (from === dest) return;
+    const xml = (PG_GET[from] ? PG_GET[from]() : '').trim();
+    if (!xml) return;                 // nothing loaded yet — no-op
+    setPlaygroundTool(dest);          // switches + re-inits the destination
+    if (PG_LOAD[dest]) PG_LOAD[dest](xml);
 }
 
 // Which section is currently active (falls back to the first).
@@ -338,6 +446,7 @@ function navigate(page, evt) {
 
     // Run page-specific initialization
     if (page === 'glossary') {
+        applyGlossaryHash();
         renderGlossary();
     } else if (page === 'playground') {
         initPlayground();
@@ -880,6 +989,7 @@ function goToHistoryLanding(evt){
 window.addEventListener('hashchange', function(){
     const m = location.hash.match(/^#\/history\/([a-z0-9-]+)$/);
     if (m) renderHistoryChapter(m[1]);
+    else if (/^#\/glossary(\?|$)/.test(location.hash) && document.querySelector('.nav-item.active[data-page="glossary"]')) { applyGlossaryHash(); renderGlossary(); }
 });
 
 // First paint: honor a deep-linked chapter, otherwise open the History landing.
@@ -887,6 +997,7 @@ function routeOnLoad(){
     const m = location.hash.match(/^#\/history\/([a-z0-9-]+)$/);
     const ch = m && getHistoryChapter(m[1]);
     if (ch && ch.status === 'ready') renderHistoryChapter(m[1]);
+    else if (/^#\/glossary(\?|$)/.test(location.hash)) navigate('glossary');
     else navigate('history');
 }
 
