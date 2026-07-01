@@ -17,10 +17,13 @@
 // THE NUMBERING (university-style difficulty × domain)
 //   100  Fundamentals  — banking concepts, money movement, clearing,
 //                         correspondent banking. No XML yet.
-//   200  Architecture  — the ISO 20022 standard itself: the Business
-//                         Application Header, namespaces, structure.
-//   300  Message Deep Dives — the happy-path messages, field by field
-//                         (pain.001, pacs.008, camt.054, …).
+//   200  Architecture  — the machinery that moves money between and inside
+//                         banks: payment systems, the gateway, the hub, the
+//                         switch, and the real-time rails. (The BAH /
+//                         head.001 envelope lives here too, as a deeper read.)
+//   300  Message Deep Dives — the message families that move and confirm a
+//                         payment: pain (you instruct your bank), pacs (banks
+//                         pay each other), camt (reporting), and head & admi.
 //   400  Exceptions    — R-transactions: cancellations (camt.056),
 //                         returns (pacs.004), routing failures.
 //
@@ -180,7 +183,7 @@ const ACADEMY_TOC = [
         summary: "Before a bank reads what a message says, it reads the envelope — who sent it, who it's for, what's inside.",
         minutes: 8,
         tags: ['BAH', 'head.001', 'routing'],
-        status: 'draft'
+        status: 'published'
     },
     {
         id: '301-pain-family',
@@ -250,7 +253,7 @@ const ACADEMY_TOC = [
         summary: "A deeper, field-by-field read on the pain family's headline message — the customer's first instruction.",
         minutes: 9,
         tags: ['pain.001', 'initiation'],
-        status: 'draft'
+        status: 'published'
     },
     {
         id: '401-reject',
@@ -310,7 +313,7 @@ const ACADEMY_TOC = [
         summary: "Sometimes a payment is sent in error and must be recalled. The polite, structured way one bank asks another to cancel.",
         minutes: 7,
         tags: ['camt.056', 'cancellation', 'R-transactions'],
-        status: 'draft'
+        status: 'published'
     },
     {
         id: '501-customer-transfer',

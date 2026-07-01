@@ -370,6 +370,30 @@ function setPlaygroundTool(tool, evt) {
     if (tool === 'validator' && window.SchemaValidator) SchemaValidator.init('val-root');
     if (tool === 'comparator' && window.MsgComparator) MsgComparator.init('cmp-root');
     if (tool === 'samples' && window.SampleLibrary) SampleLibrary.init('smp-root');
+
+    // Keep the URL on the active tool so a chosen tool is shareable / reload-safe
+    // (NAVIGATION.md §2). Write-only (replaceState, no reload); routeOnLoad /
+    // hashchange read it back.
+    if (typeof history !== 'undefined') {
+        const slug = PG_TOOL_TO_SLUG[tool] || tool;
+        const target = '#/playground/' + slug;
+        if (location.hash !== target) history.replaceState(null, '', target);
+    }
+}
+
+// Route slugs for the five Playground tools (NAVIGATION.md §3) ⇄ the internal
+// tool keys setPlaygroundTool understands.
+const PG_TOOL_SLUGS = { 'xml-viewer': 'viewer', viewer: 'viewer', transformer: 'transformer', validator: 'validator', comparator: 'comparator', samples: 'samples' };
+const PG_TOOL_TO_SLUG = { viewer: 'xml-viewer', transformer: 'transformer', validator: 'validator', comparator: 'comparator', samples: 'samples' };
+
+// Open the Playground at a specific tool (from a deep link or a glossary
+// cross-link). Ensures the Playground page is mounted, then switches tools.
+function openPlaygroundTool(slug){
+    const tool = PG_TOOL_SLUGS[slug] || 'viewer';
+    if (currentNavPage() !== 'playground' || !document.getElementById('pg-tool-viewer')) {
+        navigate('playground');
+    }
+    setPlaygroundTool(tool);
 }
 
 // Carry the current message from the active tool into another, so the five
@@ -405,21 +429,62 @@ function currentNavPage() {
     return NAV_ORDER.includes(page) ? page : NAV_ORDER[0];
 }
 
-// Step one section left (-1) or right (+1) through NAV_ORDER. Clamps at the ends.
+// The Library reading order: every article, level ascending, each level by num
+// — the exact order the Library index renders them in.
+function orderedArticleIds() {
+    if (typeof ACADEMY_TOC === 'undefined') return [];
+    const levels = Array.from(new Set(ACADEMY_TOC.map(function (x) { return x.level; }))).sort(function (m, n) { return m - n; });
+    const ids = [];
+    levels.forEach(function (l) { getArticlesByLevel(l).forEach(function (x) { ids.push(x.id); }); });
+    return ids;
+}
+
+// Step the header arrows. Context-aware:
+//   • reading a Library article  → prev / next article (past an end → the Library index)
+//   • reading a History chapter  → prev / next ready chapter (past an end → the History landing)
+//   • on a top-level page        → prev / next section through NAV_ORDER
 function stepNav(dir) {
+    if (window.__currentArticle) {
+        const order = orderedArticleIds();
+        const i = order.indexOf(window.__currentArticle);
+        if (i !== -1) {
+            const j = i + dir;
+            if (j < 0 || j >= order.length) { navigate('library'); return; }
+            openArticle(order[j]);
+            return;
+        }
+    }
+    if (window.__currentHistory && typeof HISTORY_CHAPTERS !== 'undefined') {
+        const ready = HISTORY_CHAPTERS.filter(function (c) { return c.status === 'ready'; });
+        const i = ready.findIndex(function (c) { return c.slug === window.__currentHistory; });
+        if (i !== -1) {
+            const j = i + dir;
+            if (j < 0 || j >= ready.length) { navigate('history'); return; }
+            openHistoryChapter(ready[j].slug);
+            return;
+        }
+    }
     const i = NAV_ORDER.indexOf(currentNavPage());
     const next = i + dir;
     if (next < 0 || next >= NAV_ORDER.length) return;
     navigate(NAV_ORDER[next]);
 }
 
-// Dim the arrow that would run past either end.
+// Enable/disable the arrows. While reading an article or chapter both stay live
+// (a step past either end drops back to that section's index); on a top-level
+// page they dim at the ends of NAV_ORDER.
 function updateNavArrows() {
-    const i = NAV_ORDER.indexOf(currentNavPage());
     const prev = document.getElementById('nav-prev');
     const next = document.getElementById('nav-next');
-    if (prev) prev.disabled = (i <= 0);
-    if (next) next.disabled = (i >= NAV_ORDER.length - 1);
+    if (!prev || !next) return;
+    if (window.__currentArticle || window.__currentHistory) {
+        prev.disabled = false;
+        next.disabled = false;
+        return;
+    }
+    const i = NAV_ORDER.indexOf(currentNavPage());
+    prev.disabled = (i <= 0);
+    next.disabled = (i >= NAV_ORDER.length - 1);
 }
 
 function navigate(page, evt) {
@@ -428,6 +493,10 @@ function navigate(page, evt) {
     const triggerEl = (evt && evt.target.closest('.nav-item')) || document.querySelector(`.nav-item[data-page="${page}"]`);
 
     if (evt) evt.preventDefault();
+
+    // Leaving any article/chapter reading view for a top-level section.
+    window.__currentArticle = null;
+    window.__currentHistory = null;
 
     // Update active nav + slide the indicator
     navItems.forEach(item => item.classList.remove('active'));
@@ -449,7 +518,6 @@ function navigate(page, evt) {
         applyGlossaryHash();
         renderGlossary();
     } else if (page === 'playground') {
-        initPlayground();
         if (window.XmlViewer) XmlViewer.init('xv-root');
         playgroundTool = 'viewer';
     } else if (page === 'library') {
@@ -460,6 +528,17 @@ function navigate(page, evt) {
         initStatCounters();
         initScrollCue();
         renderHistoryChapterIndex();
+    }
+
+    // Reflect the section into the URL so every top-level view is shareable and
+    // reload-safe (NAVIGATION.md §2). Glossary owns its own query-string hash
+    // (category / q / term); the rest are the bare section route. Write-only
+    // (replaceState, no reload) so this never re-enters the hashchange router.
+    if (page === 'glossary') {
+        if (typeof syncGlossaryHash === 'function') syncGlossaryHash();
+    } else if (typeof history !== 'undefined') {
+        const secTarget = '#/' + page;
+        if (location.hash !== secTarget) history.replaceState(null, '', secTarget);
     }
 
     // Hand the freshly-rendered subtree to the shared motion engine.
@@ -957,6 +1036,10 @@ function renderHistoryChapter(slug){
     closeDetailPanel();
     window.scrollTo({ top: 0, behavior: 'auto' });
 
+    // Record reading context so the header arrows step between chapters.
+    window.__currentHistory = slug;
+    window.__currentArticle = null;
+
     // Keep History lit in the global nav while reading a chapter.
     document.querySelectorAll('.nav-item').forEach(function(i){ i.classList.remove('active'); });
     const hNav = document.querySelector('.nav-item[data-page="history"]');
@@ -986,19 +1069,41 @@ function goToHistoryLanding(evt){
     navigate('history');
 }
 
+// Single hash router for browser-driven changes (manual URL edit, back/forward,
+// and the location.hash assignments in openHistoryChapter / gotoGlossaryTerm).
+// navigate() and the sync helpers use replaceState, so they never land here —
+// no render loop.
 window.addEventListener('hashchange', function(){
-    const m = location.hash.match(/^#\/history\/([a-z0-9-]+)$/);
-    if (m) renderHistoryChapter(m[1]);
-    else if (/^#\/glossary(\?|$)/.test(location.hash) && document.querySelector('.nav-item.active[data-page="glossary"]')) { applyGlossaryHash(); renderGlossary(); }
+    const h = location.hash || '';
+    const mh = h.match(/^#\/history\/([a-z0-9-]+)$/);
+    if (mh) { renderHistoryChapter(mh[1]); return; }
+    if (/^#\/history$/.test(h)) {
+        if (currentNavPage() !== 'history' || document.querySelector('.article-page')) navigate('history');
+        return;
+    }
+    if (/^#\/glossary(\/|\?|$)/.test(h)) {
+        if (currentNavPage() !== 'glossary') navigate('glossary');
+        else { applyGlossaryHash(); renderGlossary(); }
+        return;
+    }
+    const mp = h.match(/^#\/playground\/([a-z0-9-]+)$/);
+    if (mp) { openPlaygroundTool(mp[1]); return; }
+    if (/^#\/playground(\?|$)/.test(h)) { if (currentNavPage() !== 'playground') navigate('playground'); return; }
+    if (/^#\/library(\/|\?|$)/.test(h)) { if (currentNavPage() !== 'library') navigate('library'); return; }
 });
 
 // First paint: honor a deep-linked chapter, otherwise open the History landing.
 function routeOnLoad(){
-    const m = location.hash.match(/^#\/history\/([a-z0-9-]+)$/);
-    const ch = m && getHistoryChapter(m[1]);
-    if (ch && ch.status === 'ready') renderHistoryChapter(m[1]);
-    else if (/^#\/glossary(\?|$)/.test(location.hash)) navigate('glossary');
-    else navigate('history');
+    const h = location.hash || '';
+    const mh = h.match(/^#\/history\/([a-z0-9-]+)$/);
+    const ch = mh && getHistoryChapter(mh[1]);
+    if (ch && ch.status === 'ready') { renderHistoryChapter(mh[1]); return; }
+    if (/^#\/glossary(\/|\?|$)/.test(h)) { navigate('glossary'); return; }
+    const mp = h.match(/^#\/playground\/([a-z0-9-]+)$/);
+    if (mp) { openPlaygroundTool(mp[1]); return; }
+    if (/^#\/playground(\?|$)/.test(h)) { navigate('playground'); return; }
+    if (/^#\/library(\/|\?|$)/.test(h)) { navigate('library'); return; }
+    navigate('history');
 }
 
 function initRevealAnimations() {

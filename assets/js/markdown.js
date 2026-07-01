@@ -301,11 +301,16 @@ async function openArticle(id) {
     closeDetailPanel();
     window.scrollTo({ top: 0, behavior: 'auto' });
 
-    // Reflect "Learn" as the active section while reading.
+    // Record reading context so the header arrows step between articles.
+    window.__currentArticle = id;
+    window.__currentHistory = null;
+
+    // Keep the Library lit in the global nav while reading an article.
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    const learnNav = document.querySelector('.nav-item[data-page="learn"]');
-    if (learnNav) learnNav.classList.add('active');
+    const libNav = document.querySelector('.nav-item[data-page="library"]');
+    if (libNav) libNav.classList.add('active');
     if (typeof moveNavIndicator === 'function') moveNavIndicator();
+    if (typeof updateNavArrows === 'function') updateNavArrows();
 
     content.innerHTML = '<div class="page"><div class="article-loading">Loading the article…</div></div>';
     try {
