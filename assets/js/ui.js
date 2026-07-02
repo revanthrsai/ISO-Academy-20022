@@ -329,37 +329,4 @@ function applyGlossaryHash() {
     if (box) box.value = glossaryState.q;
 }
 
-// Theme management
-function toggleTheme() {
-    const toggle = document.querySelector('.theme-toggle');
-    const isDark = toggle.classList.contains('active');
-
-    if (isDark) {
-        setTheme('light');
-        toggle.classList.remove('active');
-    } else {
-        setTheme('dark');
-        toggle.classList.add('active');
-    }
-}
-
-function setTheme(theme) {
-    const toggle = document.querySelector('.theme-toggle');
-
-    if (theme === 'dark') {
-        document.body.classList.remove('light-mode');
-        toggle.classList.add('active');
-        localStorage.setItem('iso-theme', 'dark');
-    } else {
-        document.body.classList.add('light-mode');
-        toggle.classList.remove('active');
-        localStorage.setItem('iso-theme', 'light');
-    }
-}
-
-// Initialize theme from localStorage
-if (localStorage.getItem('iso-theme') === 'light') {
-    setTheme('light');
-} else {
-    setTheme('dark');
-}
+// Theme system retired 2026-07: the site ships one theme (Warm Paper + Emerald).

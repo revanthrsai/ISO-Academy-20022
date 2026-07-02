@@ -165,19 +165,20 @@ Library shelves are defined in §6.
 ### Tokens — the live source is `assets/css/style.css :root`
 
 Never hard-code a color, radius, shadow, or duration; a new hex in a component
-is a bug. Dark emerald is the default theme; `body.light-mode` flips the token
-set. Core palette:
+is a bug. The site ships ONE theme — Warm Paper + Emerald (light) — dark mode
+and the toggle were retired 2026-07. Core palette:
 
 ```
---bg #060A09 · --bg-deep #040706 · --surface #0C1311 · --surface-alt #111A17 · --surface-hi #16201C
---primary #10B981 · --primary-hover #34D399 · --primary-bright #5EEAD4 · --primary-deep #059669
---text #F4F8F6 · --text-muted #8FA39B · --text-faint #5A6B64 · --border #1B2723 · --border-hi #26352F
---glow rgba(16,185,129,.45) · status: --danger --warning --success --info (semantic only)
+--bg #FAF9F5 (warm paper) · --bg-deep #F1EFE8 · --surface #FFFFFF · --surface-alt #F6F4ED · --surface-hi #EFECE3
+--primary #0E9F70 · --primary-hover #0B8A60 · --primary-bright #10B981 · --primary-deep #0B7A54
+--text #1A211C (green-black ink) · --text-muted #5C685F · --text-faint #97A098 · --border #E6E2D6 · --border-hi #D8D3C4
+--glow rgba(14,159,112,.32) · status: --danger --warning --success --info (semantic only, dark enough for white text)
 fonts: --font-sans Inter · --font-display Plus Jakarta Sans · --font-serif Newsreader · --font-mono JetBrains Mono
 ```
 
-Surface hierarchy (darkest → lightest): `bg-deep · bg · surface · surface-alt ·
+Surface hierarchy (recessed → raised): `bg-deep · bg · surface · surface-alt ·
 surface-hi` — every panel picks the level above its parent so depth stays legible.
+Text that sits ON a --primary/--success/--warning/--danger fill is white.
 
 ### Component conventions (every component obeys these)
 
@@ -190,7 +191,7 @@ surface-hi` — every panel picks the level above its parent so depth stays legi
 
 ### Shared component inventory (name → purpose)
 
-- **Shell:** `header` (glass top bar) · `nav` (4 items + one gliding `.nav-indicator`) · `logo` · `theme-toggle` · `main-container`/`content-area` (`#content` mount) · `scroll-rail` · `site-footer`
+- **Shell:** `header` (glass top bar) · `nav` (4 items + one gliding `.nav-indicator`) · `logo` · `main-container`/`content-area` (`#content` mount) · `scroll-rail` · `site-footer`
 - **Cards:** `card` (generic) · `family-card` (selectable list, `.active` inverts) · `message-card` (compact tile) · `pillar-card` (icon + count tile) · `participant-card` (role chip) · `glossary-card` (term + accent rule)
 - **Content blocks:** `section-title`/`section-description` · `highlight-box` (accent callout) · `hero` (gradient banner, sparingly) · `timeline` · `stats-strip` · `process-map` (business-terms flow strip) · `flow-diagram` (authored as `{{flow:…}}`, see §6) · `tags`/`tag` (static pills) · `xml-example` (beat-7 code well)
 - **Reading surface:** `msg-modal` (centered dialog) sharing `.detail-panel-content` with the slide-in `detail-panel` → `detail-header`, `detail-tabs`, `detail-section`, `spotlight-fields` (tag → plain-English rows)

@@ -483,7 +483,7 @@ const MsgTransformer = (function () {
             padding: 6px 14px; border-radius: var(--radius-pill);
             transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .mxt-dir-btn.is-on { background: var(--primary); color: #04130D; font-weight: 700; }
+        .mxt-dir-btn.is-on { background: var(--primary); color: #FFFFFF; font-weight: 700; }
         .mxt-note { font-size: 13px; color: var(--text-muted); line-height: 1.5; max-width: 46ch; }
         .mxt-note strong { color: var(--text); font-weight: 600; }
         .mxt-reset {

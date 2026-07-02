@@ -574,11 +574,11 @@ const MsgComparator = (function () {
         .cmp-verdict-badge {
             flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display); font-weight: 800; font-size: 16px; color: #04130D;
+            font-family: var(--font-display); font-weight: 800; font-size: 16px; color: #FFFFFF;
         }
         .cmp-verdict-pass .cmp-verdict-badge { background: var(--success, #4ad6a0); }
         .cmp-verdict-diff .cmp-verdict-badge { background: var(--primary); }
-        .cmp-verdict-fail .cmp-verdict-badge { background: var(--danger, #f1707a); color: #2a0608; }
+        .cmp-verdict-fail .cmp-verdict-badge { background: var(--danger, #C13543); color: #FFFFFF; }
         .cmp-verdict-title { font-family: var(--font-display); font-weight: 700; font-size: 15.5px; color: var(--text); }
         .cmp-verdict-sub { margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
         .cmp-verdict-tallies { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
@@ -615,9 +615,9 @@ const MsgComparator = (function () {
             text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-pill);
             font-weight: 700;
         }
-        .cmp-changed .cmp-status { background: var(--warning, #e3b341); color: #2a1e04; }
-        .cmp-added .cmp-status { background: var(--success, #4ad6a0); color: #04130D; }
-        .cmp-removed .cmp-status { background: var(--danger, #f1707a); color: #2a0608; }
+        .cmp-changed .cmp-status { background: var(--warning, #A96B00); color: #FFFFFF; }
+        .cmp-added .cmp-status { background: var(--success, #0B8A60); color: #FFFFFF; }
+        .cmp-removed .cmp-status { background: var(--danger, #C13543); color: #FFFFFF; }
         .cmp-same .cmp-status { background: var(--border-hi); color: var(--bg-deep); }
         .cmp-field { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--text); }
         .cmp-path { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.01em; }

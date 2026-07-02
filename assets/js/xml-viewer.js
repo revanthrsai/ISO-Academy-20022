@@ -660,7 +660,7 @@ const XmlViewer = (function () {
             padding: 4px 11px; border-radius: var(--radius-pill);
             transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .xv-toggle-btn.is-on { background: var(--primary); color: #04130D; font-weight: 600; }
+        .xv-toggle-btn.is-on { background: var(--primary); color: #FFFFFF; font-weight: 600; }
 
         .xv-treewrap { flex: 1; min-height: 360px; max-height: 620px; overflow: auto; padding: 14px 14px 18px; }
         .xv-tree { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; }

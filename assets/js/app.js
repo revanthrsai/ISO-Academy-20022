@@ -3,92 +3,12 @@
 const PAGES = {
     history: `
         <div class="page">
-            <section class="hero-stage" data-hero data-mouse-parallax aria-label="ISO Academy introduction">
+            <section class="hero-stage" data-hero aria-label="ISO Academy introduction">
                 <div class="hero-bg" aria-hidden="true">
-                    <div class="hero-glow" data-mp-depth="18"></div>
-                    <svg class="hero-net" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" data-mp-depth="34">
-                        <defs>
-                            <radialGradient id="heroNode" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="#5EEAD4"/>
-                                <stop offset="100%" stop-color="#059669"/>
-                            </radialGradient>
-                            <linearGradient id="heroFlow" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stop-color="#10B981" stop-opacity="0"/>
-                                <stop offset="50%" stop-color="#5EEAD4" stop-opacity="0.9"/>
-                                <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <g class="hero-rings">
-                            <circle cx="600" cy="400" r="250"/>
-                            <circle cx="600" cy="400" r="410"/>
-                            <circle cx="600" cy="400" r="580"/>
-                        </g>
-                        <g class="hero-edges">
-                            <line x1="150" y1="180" x2="380" y2="120"/>
-                            <line x1="150" y1="180" x2="300" y2="360"/>
-                            <line x1="380" y1="120" x2="560" y2="300"/>
-                            <line x1="300" y1="360" x2="560" y2="300"/>
-                            <line x1="300" y1="360" x2="180" y2="560"/>
-                            <line x1="560" y1="300" x2="520" y2="540"/>
-                            <line x1="560" y1="300" x2="760" y2="180"/>
-                            <line x1="520" y1="540" x2="680" y2="640"/>
-                            <line x1="760" y1="180" x2="820" y2="440"/>
-                            <line x1="760" y1="180" x2="940" y2="120"/>
-                            <line x1="820" y1="440" x2="1000" y2="300"/>
-                            <line x1="1000" y1="300" x2="1060" y2="560"/>
-                            <line x1="820" y1="440" x2="680" y2="640"/>
-                            <line x1="1000" y1="300" x2="940" y2="120"/>
-                            <line x1="520" y1="540" x2="820" y2="440"/>
-                            <line x1="180" y1="560" x2="520" y2="540"/>
-                        </g>
-                        <g class="hero-flows" stroke="url(#heroFlow)">
-                            <line x1="150" y1="180" x2="380" y2="120" class="hero-flow"/>
-                            <line x1="380" y1="120" x2="560" y2="300" class="hero-flow" style="animation-delay:1.1s"/>
-                            <line x1="560" y1="300" x2="760" y2="180" class="hero-flow" style="animation-delay:2.3s"/>
-                            <line x1="760" y1="180" x2="820" y2="440" class="hero-flow" style="animation-delay:0.6s"/>
-                            <line x1="820" y1="440" x2="1000" y2="300" class="hero-flow" style="animation-delay:3.1s"/>
-                            <line x1="520" y1="540" x2="820" y2="440" class="hero-flow" style="animation-delay:1.8s"/>
-                        </g>
-                        <g class="hero-nodes">
-                            <circle cx="150" cy="180" r="4"/>
-                            <circle cx="380" cy="120" r="5" class="node-pulse"/>
-                            <circle cx="300" cy="360" r="4"/>
-                            <circle cx="560" cy="300" r="6" class="node-pulse" style="animation-delay:1.4s"/>
-                            <circle cx="520" cy="540" r="4"/>
-                            <circle cx="760" cy="180" r="5" class="node-pulse" style="animation-delay:0.7s"/>
-                            <circle cx="820" cy="440" r="5" class="node-pulse" style="animation-delay:2.1s"/>
-                            <circle cx="1000" cy="300" r="6" class="node-pulse" style="animation-delay:2.8s"/>
-                            <circle cx="1060" cy="560" r="4"/>
-                            <circle cx="180" cy="560" r="4"/>
-                            <circle cx="680" cy="640" r="5" class="node-pulse" style="animation-delay:3.4s"/>
-                            <circle cx="940" cy="120" r="4"/>
-                        </g>
-                    </svg>
+                    <video class="hero-video" autoplay muted loop playsinline preload="auto"
+                           src="content/videobyte/iso20022_cinematic_intro.mp4"></video>
                     <div class="hero-vignette"></div>
                 </div>
-
-                <!-- Animated financial stream: flowing currency symbols + ISO jargon -->
-                <div class="hero-stream" aria-hidden="true">
-                    <span class="hero-token is-sym" style="left:5%;  --d:21s; --delay:-2s;  --size:64px; --op:.18; --drift:30px;">&#8377;</span>
-                    <span class="hero-token" style="left:11%; --d:26s; --delay:-9s;  --size:18px; --op:.30; --drift:-40px;">SWIFT</span>
-                    <span class="hero-token is-sym" style="left:17%; --d:18s; --delay:-5s;  --size:40px; --op:.28; --drift:24px;">$</span>
-                    <span class="hero-token" style="left:23%; --d:30s; --delay:-14s; --size:15px; --op:.24; --drift:50px;">IBAN</span>
-                    <span class="hero-token is-sym" style="left:29%; --d:23s; --delay:-1s;  --size:88px; --op:.14; --drift:-20px;">&euro;</span>
-                    <span class="hero-token" style="left:35%; --d:27s; --delay:-18s; --size:16px; --op:.32; --drift:34px;">PACS</span>
-                    <span class="hero-token" style="left:41%; --d:20s; --delay:-7s;  --size:20px; --op:.26; --drift:-48px;">GROSS</span>
-                    <span class="hero-token is-sym" style="left:47%; --d:25s; --delay:-12s; --size:52px; --op:.20; --drift:40px;">&pound;</span>
-                    <span class="hero-token" style="left:53%; --d:31s; --delay:-3s;  --size:15px; --op:.30; --drift:-30px;">UETR</span>
-                    <span class="hero-token is-sym" style="left:59%; --d:19s; --delay:-16s; --size:72px; --op:.16; --drift:22px;">&yen;</span>
-                    <span class="hero-token" style="left:65%; --d:28s; --delay:-6s;  --size:17px; --op:.28; --drift:46px;">CAMT</span>
-                    <span class="hero-token" style="left:71%; --d:24s; --delay:-20s; --size:16px; --op:.24; --drift:-36px;">NET</span>
-                    <span class="hero-token is-sym" style="left:77%; --d:22s; --delay:-4s;  --size:46px; --op:.24; --drift:28px;">$</span>
-                    <span class="hero-token" style="left:83%; --d:29s; --delay:-11s; --size:18px; --op:.30; --drift:-44px;">BIC</span>
-                    <span class="hero-token" style="left:89%; --d:26s; --delay:-15s; --size:15px; --op:.26; --drift:32px;">PAIN</span>
-                    <span class="hero-token is-sym" style="left:94%; --d:20s; --delay:-8s;  --size:56px; --op:.18; --drift:-26px;">&#8377;</span>
-                    <span class="hero-token" style="left:14%; --d:33s; --delay:-22s; --size:14px; --op:.22; --drift:38px;">ISO 20022</span>
-                    <span class="hero-token" style="left:62%; --d:34s; --delay:-25s; --size:14px; --op:.22; --drift:-34px;">MX</span>
-                </div>
-
             </section>
 
             <section class="story-section reveal-section">

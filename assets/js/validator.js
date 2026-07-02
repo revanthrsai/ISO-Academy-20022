@@ -620,10 +620,10 @@ const SchemaValidator = (function () {
         .val-verdict-badge {
             flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display); font-weight: 800; font-size: 17px; color: #04130D;
+            font-family: var(--font-display); font-weight: 800; font-size: 17px; color: #FFFFFF;
         }
         .val-verdict-pass .val-verdict-badge { background: var(--success, #4ad6a0); }
-        .val-verdict-fail .val-verdict-badge { background: var(--danger, #f1707a); color: #2a0608; }
+        .val-verdict-fail .val-verdict-badge { background: var(--danger, #C13543); color: #FFFFFF; }
         .val-verdict-title { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--text); }
         .val-verdict-sub { margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
 
@@ -643,8 +643,8 @@ const SchemaValidator = (function () {
             text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-pill);
             font-weight: 700;
         }
-        .val-sev-error .val-sev-pill { background: var(--danger, #f1707a); color: #2a0608; }
-        .val-sev-warn .val-sev-pill { background: var(--warning, #e3b341); color: #2a1e04; }
+        .val-sev-error .val-sev-pill { background: var(--danger, #C13543); color: #FFFFFF; }
+        .val-sev-warn .val-sev-pill { background: var(--warning, #A96B00); color: #FFFFFF; }
         .val-rule { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--text); }
         .val-where {
             margin-left: auto; font-family: var(--font-mono); font-size: 11px;

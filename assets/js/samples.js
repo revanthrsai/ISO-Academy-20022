@@ -920,8 +920,8 @@ const SampleLibrary = (function () {
         }
         .smp-load:hover { border-color: var(--primary-deep); color: var(--text); background: var(--glass-tint-strong); }
         .smp-load-ar { color: var(--primary); font-weight: 700; }
-        .smp-load.is-flash { border-color: var(--primary); background: var(--primary); color: #04130D; }
-        .smp-load.is-flash .smp-load-ar { color: #04130D; }
+        .smp-load.is-flash { border-color: var(--primary); background: var(--primary); color: #FFFFFF; }
+        .smp-load.is-flash .smp-load-ar { color: #FFFFFF; }
         `;
         const style = document.createElement('style');
         style.id = 'smp-styles';
